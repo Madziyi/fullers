@@ -13,20 +13,28 @@
   - [x] Administrator inbox reads and connected public navigation
   - [x] Desktop/mobile/accessibility/security checks and screenshots
   - [x] M2 review PR opened with hosted CI configured: [#2](https://github.com/Madziyi/fullers/pull/2)
-- [ ] M3: custom CRUD, rich-text editor, SEO guidance, preview, autosave, scheduling, revisions, audit
+- [ ] M3: custom CRUD, rich-text editor, SEO guidance, preview, autosave, reliable scheduling, audit
   - [x] Confirm first slice, publication roles and scheduling timezone
   - [x] Prepare M3A implementation plan (docs/M3A_PLAN.md)
-  - [x] Implement M3A article workflow; review is pending on `feat/m3a-article-workflow`
+  - [x] Implement M3A article workflow; review PR #3 is open on `feat/m3a-article-workflow`
   - [x] Verify publication snapshots, role ownership, media privacy, autosave conflicts and publication actions
   - [x] Run production desktop/mobile public, admin, article, preview, media and accessibility checks
   - [x] Capture representative editor and private-preview screenshots
   - [x] Parent review and PR packaging: [#3](https://github.com/Madziyi/fullers/pull/3); do not merge implicitly
+  - [x] M3B plan with schedule-version conflict rules; revision restore UI explicitly excluded
+  - [x] Africa/Harare schedule controls with UTC storage, admin permissions and cancellation
+  - [x] Authenticated worker, bounded retries, idempotent publication and visible review/failure states
+  - [x] Verify schedule privacy, stale-edit handling, worker concurrency and public snapshot safety
+  - [x] Production build, strict types, lint, unit/database checks and desktop/mobile Playwright
+  - [x] Capture M3B desktop/mobile scheduling screenshots
+  - [ ] Open M3B review PR and verify hosted CI
+  - [ ] Configure production cron/hosting trigger and worker secret before release
 - [ ] M4: staging, release hardening, backups/restore, redirects review and CWV/UAT
 
 ## Remaining inventory
 
 - M2 public pages and guarded enquiry workflow are delivered. Email notifications, full inbox management and retention/deletion automation remain future work.
-- M3A delivered locally: structured article drafts, immutable publication snapshots, private uploads, SEO guidance, product links, autosave, authenticated preview, admin-only publish/unpublish and public blog relationships. Tables/FAQ/code formats, scheduling, operational revision browsing/restore, product CMS, page sections, project approvals, enquiry management, redirects, user/role UI and audit browser remain future work.
+- M3A delivered: structured article drafts, immutable publication snapshots, private uploads, SEO guidance, product links, autosave, authenticated preview, admin-only publish/unpublish and public blog relationships. M3B delivers Zimbabwe-time scheduling and worker reliability with exact-version conflict handling. Revision browsing/restore UI is not required. Tables/FAQ/code formats, product CMS, page sections, project approvals, enquiry management, redirects, user/role UI and audit browser remain future work.
 - M4: verified legacy redirect map, privacy approval, staging setup, MFA/recovery and edge throttling, media/security review, monitoring, backup/restore exercise, real CWV and full keyboard/screen-reader/UAT review. Only deploy with explicit authorization.
 - Fullers inputs: product sizes/specifications, three missing product photos, imagery rights/attribution, delivery regions, award detail, privacy text and enquiry recipient. Verify supplied WhatsApp number against original link before release.
 - M1 handoff: [PR #1](https://github.com/Madziyi/fullers/pull/1) open; M2 is stacked on the reviewed M1 branch. M3A is now a separate branch and review boundary.

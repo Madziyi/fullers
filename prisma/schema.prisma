@@ -23,6 +23,14 @@ enum InquiryStatus {
   CLOSED
   SPAM
 }
+enum PublicationJobStatus {
+  PENDING
+  RETRY
+  PUBLISHED
+  NEEDS_REVIEW
+  FAILED
+  CANCELLED
+}
 model User {
   id String @id @default(cuid())
   email String @unique
@@ -36,6 +44,7 @@ model User {
   revisions PostRevision[]
   auditLogs AuditLog[]
   articleUploads Media[] @relation("ArticleMediaUploader")
+  scheduledPublications PublicationJob[]
 }
 model Post {
   id String @id @default(cuid())
@@ -65,6 +74,7 @@ model Post {
   revisions PostRevision[]
   publishedRevision PostRevision? @relation("PublishedPostVersion", fields: [id, publishedRevisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
   uploadedMedia Media[] @relation("ArticlePostMedia")
+  publicationJobs PublicationJob[]
   @@index([status, publishedAt])
   @@index([status, publishAt])
   @@unique([id, publishedRevisionId])
@@ -81,6 +91,24 @@ model PostRevision {
   publishedFor Post? @relation("PublishedPostVersion")
   @@unique([postId, id])
   @@unique([postId, version])
+}
+model PublicationJob {
+  id String @id @default(cuid())
+  postId String
+  post Post @relation(fields: [postId], references: [id], onDelete: Restrict)
+  scheduledById String
+  scheduledBy User @relation(fields: [scheduledById], references: [id], onDelete: Restrict)
+  scheduledVersion Int
+  runAt DateTime @db.Timestamptz(3)
+  nextAttemptAt DateTime @db.Timestamptz(3)
+  status PublicationJobStatus @default(PENDING)
+  attempts Int @default(0)
+  lastError String?
+  finishedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@index([status, nextAttemptAt, runAt])
+  @@index([postId, status, createdAt])
 }
 model PostCategory {
   id String @id @default(cuid())
