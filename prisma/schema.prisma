@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  ADMIN
+  EDITOR
+}
+enum ContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+  SPAM
+}
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  passwordHash String
+  role Role @default(EDITOR)
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  posts Post[]
+  revisions PostRevision[]
+  auditLogs AuditLog[]
+}
+model Post {
+  id String @id @default(cuid())
+  title String
+  slug String @unique
+  excerpt String
+  body Json
+  status ContentStatus @default(DRAFT)
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  categoryId String?
+  category PostCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags Tag[]
+  products Product[]
+  coverId String?
+  cover Media? @relation(fields: [coverId], references: [id], onDelete: SetNull)
+  coverAlt String?
+  seo Json?
+  version Int @default(1)
+  publishAt DateTime? @db.Timestamptz(3)
+  publishedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+  revisions PostRevision[]
+  @@index([status, publishedAt])
+  @@index([status, publishAt])
+}
+model PostRevision {
+  id String @id @default(cuid())
+  postId String
+  post Post @relation(fields: [postId], references: [id], onDelete: Restrict)
+  actorId String
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  version Int
+  snapshot Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([postId, version])
+}
+model PostCategory {
+  id String @id @default(cuid())
+  name String
+  slug String @unique
+  posts Post[]
+}
+model Tag {
+  id String @id @default(cuid())
+  name String
+  slug String @unique
+  posts Post[]
+}
+model Product {
+  id String @id @default(cuid())
+  name String
+  slug String @unique
+  summary String
+  body Json?
+  applications String[] @default([])
+  specifications Json @default("[]")
+  faqs Json @default("[]")
+  imageId String?
+  image Media? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  imageAlt String?
+  status ContentStatus @default(DRAFT)
+  featured Boolean @default(false)
+  sortOrder Int @default(0)
+  seo Json?
+  related Product[] @relation("RelatedProducts")
+  relatedTo Product[] @relation("RelatedProducts")
+  posts Post[]
+  projects Project[]
+  publishAt DateTime? @db.Timestamptz(3)
+  publishedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+  @@index([status, publishedAt, sortOrder])
+}
+model Project {
+  id String @id @default(cuid())
+  title String
+  slug String @unique
+  location String?
+  projectDate DateTime? @db.Timestamptz(3)
+  clientName String?
+  clientPermissionAt DateTime? @db.Timestamptz(3)
+  body Json
+  images Media[]
+  products Product[]
+  status ContentStatus @default(DRAFT)
+  approvedAt DateTime? @db.Timestamptz(3)
+  featured Boolean @default(false)
+  seo Json?
+  publishAt DateTime? @db.Timestamptz(3)
+  publishedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+  @@index([status, publishedAt])
+}
+model Media {
+  id String @id @default(cuid())
+  storageKey String @unique
+  mimeType String
+  bytes Int
+  width Int
+  height Int
+  source String
+  alt String
+  focalX Float @default(0.5)
+  focalY Float @default(0.5)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+  products Product[]
+  posts Post[]
+  projects Project[]
+}
+model PageContent {
+  id String @id @default(cuid())
+  title String
+  slug String @unique
+  sections Json
+  status ContentStatus @default(DRAFT)
+  version Int @default(1)
+  seo Json?
+  publishAt DateTime? @db.Timestamptz(3)
+  publishedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+}
+model SiteSettings {
+  id String @id @default("site")
+  companyName String
+  phone String
+  location String
+  experienceValue String
+  experienceLabel String
+  jobsValue String
+  jobsLabel String
+  satisfactionValue String
+  satisfactionLabel String
+  awardClaim String
+  seoTitle String
+  seoDescription String
+  socialLinks Json @default("[]")
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+model Redirect {
+  id String @id @default(cuid())
+  source String @unique
+  destination String
+  permanent Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model Inquiry {
+  id String @id @default(cuid())
+  name String
+  email String?
+  phone String?
+  message String
+  productSlug String?
+  consentAt DateTime @db.Timestamptz(3)
+  status InquiryStatus @default(NEW)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+  @@index([status, createdAt])
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action String
+  entity String
+  entityId String
+  changes Json?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@index([entity, entityId, createdAt])
+}
+model LoginThrottle {
+  key String @id
+  attempts Int @default(0)
+  windowStart DateTime @default(now()) @db.Timestamptz(3)
+}

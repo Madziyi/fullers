@@ -1,0 +1,47 @@
+name: Quality checks
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fullers
+          POSTGRES_PASSWORD: fullers
+          POSTGRES_DB: fullers
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://fullers:fullers@localhost:5432/fullers
+      CONTENT_SOURCE: database
+      NEXTAUTH_URL: http://127.0.0.1:3107
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3107
+      NEXTAUTH_SECRET: ci-only-disposable-secret-not-for-production
+      ADMIN_EMAIL: admin@example.test
+      ADMIN_PASSWORD: ci-only-long-admin-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npm run test:db
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: |
+            test-results/
+            playwright-report/
+            docs/screenshots/
