@@ -1,5 +1,9 @@
 # Decision log
 
+## M3A review handoff
+
+Parent review completed after Luna high implementation. Published the feature branch and opened PR #3 (https://github.com/Madziyi/fullers/pull/3), stacked on M2, with screenshots, local validation and remaining M3 inventory. Hosted CI is tracked on the PR. No merge or deployment; the existing generated-only next-env.d.ts change remains local.
+
 ## M3A implementation — 2026-10-25
 
 - Implemented the reviewed first slice on `feat/m3a-article-workflow`: safe structured article editing; taxonomy, author, slug, cover, approved products and SEO fields; autosave with CAS/version conflict and navigation handling; private uploads with actual decode/size/dimension limits; authenticated actual-renderer preview; administrator-only publish/unpublish; immutable snapshots; public blog list/detail and relevant home/product links.

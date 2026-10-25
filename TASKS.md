@@ -20,7 +20,7 @@
   - [x] Verify publication snapshots, role ownership, media privacy, autosave conflicts and publication actions
   - [x] Run production desktop/mobile public, admin, article, preview, media and accessibility checks
   - [x] Capture representative editor and private-preview screenshots
-  - [ ] Parent review and PR packaging; do not merge implicitly
+  - [x] Parent review and PR packaging: [#3](https://github.com/Madziyi/fullers/pull/3); do not merge implicitly
 - [ ] M4: staging, release hardening, backups/restore, redirects review and CWV/UAT
 
 ## Remaining inventory
