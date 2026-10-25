@@ -6,12 +6,17 @@ import { whatsappUrl } from '@/lib/catalogue';
 import { Arrow, Symbol } from '@/components/icons';
 import { ProductCard } from '@/components/product-card';
 import { ContactBand } from '@/components/chrome';
+import { getPublishedArticles } from '@/lib/articles';
 export async function generateMetadata() {
   const s = await getSettings();
   return pageMetadata(s.seoTitle, s.seoDescription, '/');
 }
 export default async function Home() {
-  const [settings, products] = await Promise.all([getSettings(), getProducts()]);
+  const [settings, products, articles] = await Promise.all([
+    getSettings(),
+    getProducts(),
+    getPublishedArticles(),
+  ]);
   return (
     <main id="main">
       <script
@@ -258,6 +263,32 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      {articles.length > 0 && (
+        <section className="section home-blog">
+          <div className="container">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">FROM THE FULLERS YARD</p>
+                <h2>Ideas for what you’re building.</h2>
+              </div>
+              <Link className="text-link" href="/blog">
+                All articles <Arrow diagonal />
+              </Link>
+            </div>
+            <div className="blog-grid">
+              {articles.slice(0, 3).map((article) => (
+                <article key={article.slug}>
+                  <p className="eyebrow">{article.categoryName ?? 'FULLERS AGGREGATE'}</p>
+                  <h3>
+                    <Link href={`/blog/${article.slug}`}>{article.title}</Link>
+                  </h3>
+                  <p>{article.excerpt}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       <ContactBand settings={settings} />
     </main>
   );

@@ -10,7 +10,10 @@ const nav = [
   { label: 'Services', href: '/services' },
   { label: 'Contact', href: '/contact' },
 ];
-export function Header({ settings }: { settings: Settings }) {
+export function Header({ settings, showBlog = false }: { settings: Settings; showBlog?: boolean }) {
+  const items = showBlog
+    ? [...nav.slice(0, 4), { label: 'Blog', href: '/blog' }, ...nav.slice(4)]
+    : nav;
   return (
     <>
       <div className="utility">
@@ -33,7 +36,7 @@ export function Header({ settings }: { settings: Settings }) {
             />
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
-            {nav.map((item) => (
+            {items.map((item) => (
               <Link href={item.href} key={item.label}>
                 {item.label}
               </Link>
@@ -42,7 +45,7 @@ export function Header({ settings }: { settings: Settings }) {
           <Link className="button button-small header-quote" href="/contact">
             Request a quote <Arrow diagonal />
           </Link>
-          <MobileMenu items={nav} />
+          <MobileMenu items={items} />
         </div>
       </header>
     </>

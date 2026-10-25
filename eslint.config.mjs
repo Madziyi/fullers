@@ -7,7 +7,9 @@ export default defineConfig([
   globalIgnores([
     '.next/**',
     '.next-review/**',
+    '.next-*/**',
     '.local-tools/**',
+    'src/generated/**',
     'next-env.d.ts',
     'playwright-report/**',
     'test-results/**',

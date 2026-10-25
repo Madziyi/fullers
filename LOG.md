@@ -1,5 +1,22 @@
 # Decision log
 
+## M3A review handoff
+
+Parent review completed after Luna high implementation. Published the feature branch and opened PR #3 (https://github.com/Madziyi/fullers/pull/3), stacked on M2, with screenshots, local validation and remaining M3 inventory. Hosted CI is tracked on the PR. No merge or deployment; the existing generated-only next-env.d.ts change remains local.
+
+## M3A implementation — 2026-10-25
+
+- Implemented the reviewed first slice on `feat/m3a-article-workflow`: safe structured article editing; taxonomy, author, slug, cover, approved products and SEO fields; autosave with CAS/version conflict and navigation handling; private uploads with actual decode/size/dimension limits; authenticated actual-renderer preview; administrator-only publish/unpublish; immutable snapshots; public blog list/detail and relevant home/product links.
+- Kept all anonymous page data, metadata, sitemap and article image access bound to the validated currently published snapshot. Added unique locked public slugs and a composite database reference preventing cross-post revision pointers. Draft changes remain invisible until a new explicit publication. Public reads select only pointed revisions; unpublish revokes live article and media access.
+- Centralized Prisma client creation with Prisma 6.19.3 `engineType=client` and `@prisma/adapter-pg`; generation no longer replaces or locks a native query-engine DLL used by the running preview. Added client generation to scripts/CI paths and applied the M3A migration locally.
+- Explicit M3A deferrals: table, FAQ and code blocks; operational scheduling/history UI (M3B); product CMS and media library, page/project/enquiry/redirect/user/audit administration (M3C/M3D). No fake sample article or production content was added.
+- Validation: 41 unit tests pass; database integration passes including cross-post revision FK rejection and rolled-back pointer swap; typecheck and lint pass; isolated production build passes. Production browser suite passes 18/18 across desktop/mobile, including publication-v2 snapshot regression, private preview axe checks, upload decode/origin checks and media visibility revocation. Development login regression passes 2/2. Representative populated editor/private-preview screenshots are in `docs/screenshots/`.
+- QA used generated ignored build output `.next-m3a-final`, production port 3117 and development port 3119. The user's 3107 preview and PostgreSQL service remained available; disposable accounts, article/media fixtures were removed after tests. Parent review is pending; no PR or merge was performed.
+
+## M3 discussion
+
+- User requested discussion and planning of the next implementation after reviewing M2/login. Prepared a draft M3 breakdown, recommending an article-publishing vertical slice first. Publication roles and scheduling timezone remain proposed decisions, not approvals. No application changes or M3 implementation started.
+
 ## Local login repair
 
 - Reproduced Webpack React Refresh failing under the production-style CSP in development. Enabled eval only for development; production retains its stricter script policy.
@@ -43,3 +60,5 @@
 - Final M2 regression: all 16 browser tests passed after disposable admin fixtures and mobile menu assertions. Production build, strict types, lint, 26 unit tests and PostgreSQL integration passed. Pre-existing generated next-env.d.ts dev imports are preserved and excluded from the M2 commit.
 
 - Opened and attached M2 PR https://github.com/Madziyi/fullers/pull/2, stacked on the reviewed M1 branch. CI repeats all checks; no merge, deployment or M3 implementation performed.
+
+- M3 discussion decisions confirmed: article editing/publishing first; editors draft, administrators publish; scheduling displays Africa/Harare with UTC persistence. Prepared docs/M3A_PLAN.md with publication snapshots, autosave/conflict boundaries, safe media, public article routes and acceptance checks. Planning only; no application implementation started.

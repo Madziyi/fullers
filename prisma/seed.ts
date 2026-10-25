@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../src/lib/prisma-client';
 import { hash } from 'bcryptjs';
 import { stat } from 'node:fs/promises';
 import { initialProducts, initialSettings } from '../src/lib/catalogue';
-const db = new PrismaClient();
+const db = createPrismaClient();
 async function main() {
   await db.siteSettings.upsert({ where: { id: 'site' }, update: {}, create: initialSettings });
   for (const [sortOrder, product] of initialProducts.entries()) {

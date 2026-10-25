@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../src/lib/prisma-client';
 import assert from 'node:assert/strict';
 import { publicWhere } from '../src/lib/catalogue';
-const db = new PrismaClient();
+const db = createPrismaClient();
 async function main() {
   assert.equal(await db.product.count({ where: publicWhere() }), 7);
   assert.equal(await db.project.count(), 0);
@@ -42,6 +42,70 @@ async function main() {
     '700+',
   );
   assert.equal(await db.auditLog.count({ where: { action: 'TEST' } }), 0);
+
+  const articleAuthor = await db.user.findFirstOrThrow({ where: { role: 'ADMIN' } });
+  const articleA = await db.post.create({
+    data: {
+      title: 'Article A fixture',
+      slug: 'article-a-fixture',
+      excerpt: '',
+      body: {},
+      authorId: articleAuthor.id,
+    },
+  });
+  const articleB = await db.post.create({
+    data: {
+      title: 'Article B fixture',
+      slug: 'article-b-fixture',
+      excerpt: '',
+      body: {},
+      authorId: articleAuthor.id,
+    },
+  });
+  const revisionA1 = await db.postRevision.create({
+    data: {
+      postId: articleA.id,
+      actorId: articleAuthor.id,
+      version: 1,
+      snapshot: { title: 'Stable snapshot' },
+    },
+  });
+  const revisionA2 = await db.postRevision.create({
+    data: {
+      postId: articleA.id,
+      actorId: articleAuthor.id,
+      version: 2,
+      snapshot: { title: 'Tentative snapshot' },
+    },
+  });
+  await db.post.update({
+    where: { id: articleA.id },
+    data: { publishedRevisionId: revisionA1.id },
+  });
+  await assert.rejects(
+    db.post.update({ where: { id: articleB.id }, data: { publishedRevisionId: revisionA1.id } }),
+    /foreign key|constraint/i,
+  );
+  const rollbackPublication = new Error('expected publication rollback');
+  try {
+    await db.$transaction(async (tx) => {
+      const changed = await tx.post.updateMany({
+        where: { id: articleA.id, version: 1, publishedRevisionId: revisionA1.id },
+        data: { publishedRevisionId: revisionA2.id, version: { increment: 1 } },
+      });
+      assert.equal(changed.count, 1);
+      throw rollbackPublication;
+    });
+  } catch (error) {
+    if (error !== rollbackPublication) throw error;
+  }
+  assert.equal(
+    (await db.post.findUniqueOrThrow({ where: { id: articleA.id } })).publishedRevisionId,
+    revisionA1.id,
+  );
+  await db.post.update({ where: { id: articleA.id }, data: { publishedRevisionId: null } });
+  await db.postRevision.deleteMany({ where: { postId: { in: [articleA.id, articleB.id] } } });
+  await db.post.deleteMany({ where: { id: { in: [articleA.id, articleB.id] } } });
   await assert.rejects(
     db.product.create({ data: { name: 'Duplicate', slug: 'bricks', summary: 'Should fail' } }),
   );
