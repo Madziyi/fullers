@@ -1,8 +1,16 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createArticleTaxonomy, publishArticle, saveArticle, unpublishArticle } from './actions';
+import {
+  cancelArticleSchedule,
+  createArticleTaxonomy,
+  publishArticle,
+  saveArticle,
+  scheduleArticle,
+  unpublishArticle,
+} from './actions';
 import type { ArticleBody } from '@/lib/articles';
+import { formatHarareDateTime, utcToHarareLocal } from '@/lib/scheduling-time';
 
 type Props = {
   post: {
@@ -26,6 +34,15 @@ type Props = {
     published: boolean;
     slugLocked: boolean;
     admin: boolean;
+    defaultScheduleLocal: string;
+    schedule: {
+      id: string;
+      status: string;
+      runAt: string;
+      attempts: number;
+      lastError: string | null;
+      scheduledVersion: number;
+    } | null;
   };
 };
 export function ArticleEditor({ post }: Props) {
@@ -34,6 +51,10 @@ export function ArticleEditor({ post }: Props) {
   const [status, setStatus] = useState('All changes saved');
   const [message, setMessage] = useState('');
   const [actionBusy, setActionBusy] = useState(false);
+  const [scheduleLocal, setScheduleLocal] = useState(
+    post.schedule ? utcToHarareLocal(new Date(post.schedule.runAt)) : post.defaultScheduleLocal,
+  );
+  const [scheduleState, setScheduleState] = useState(post.schedule);
   const [blocks, setBlocks] = useState<ArticleBody['blocks']>(post.body.blocks);
   const [categories, setCategories] = useState(post.categories);
   const [tags, setTags] = useState(post.tags);
@@ -96,6 +117,21 @@ export function ArticleEditor({ post }: Props) {
           savedVersion = result.version;
           version.current = result.version;
           setForm((old) => ({ ...old, version: result.version }));
+          if (result.scheduleConflict) {
+            setScheduleState((old) =>
+              old
+                ? {
+                    ...old,
+                    status: 'NEEDS_REVIEW',
+                    lastError:
+                      'The saved article changed after scheduling. Review and schedule it again.',
+                  }
+                : old,
+            );
+            setMessage(
+              'This draft changed after scheduling. Review the new draft and schedule it again.',
+            );
+          }
           dirty.current = generation.current !== sentGeneration;
         } while (dirty.current);
         setStatus('All changes saved');
@@ -132,6 +168,11 @@ export function ArticleEditor({ post }: Props) {
       if (v !== null) router.push(target);
     };
     const onClick = (event: MouseEvent) => {
+      if (actionLock.current) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
       if (!(dirty.current || saving.current)) return;
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -144,6 +185,11 @@ export function ArticleEditor({ post }: Props) {
       void saveThenNavigate(`${destination.pathname}${destination.search}${destination.hash}`);
     };
     const onPopState = (event: PopStateEvent) => {
+      if (actionLock.current) {
+        event.stopImmediatePropagation();
+        window.history.pushState(null, '', currentUrl.current);
+        return;
+      }
       if (!(dirty.current || saving.current)) {
         currentUrl.current = window.location.href;
         return;
@@ -255,6 +301,72 @@ export function ArticleEditor({ post }: Props) {
         actionLock.current = false;
         setActionBusy(false);
       }
+    }
+  }
+  async function runScheduleAction(action: 'schedule' | 'cancel') {
+    if (actionLock.current) return;
+    actionLock.current = true;
+    setActionBusy(true);
+    setStatus(action === 'schedule' ? 'Saving schedule…' : 'Cancelling schedule…');
+    try {
+      const savedVersion = await save();
+      if (savedVersion === null) {
+        setMessage('Resolve the save issue before changing this schedule.');
+        return;
+      }
+      if (action === 'schedule') {
+        const result = await scheduleArticle({
+          id: post.id,
+          version: savedVersion,
+          localDateTime: scheduleLocal,
+        });
+        if (!result.ok) {
+          setMessage('error' in result ? String(result.error) : 'The schedule could not be saved.');
+          setStatus('Schedule needs attention');
+          return;
+        }
+        version.current = result.version;
+        setForm((old) => ({ ...old, version: result.version }));
+        setScheduleState({
+          id: result.jobId,
+          status: 'PENDING',
+          runAt: result.runAt,
+          attempts: 0,
+          lastError: null,
+          scheduledVersion: result.version,
+        });
+        setStatus('Schedule saved');
+        setMessage('The saved version is queued for publication at the selected Zimbabwe time.');
+      } else {
+        if (!scheduleState) return;
+        const result = await cancelArticleSchedule(post.id, savedVersion);
+        if (!result.ok) {
+          setMessage(
+            'error' in result ? String(result.error) : 'The schedule could not be cancelled.',
+          );
+          setStatus('Schedule needs attention');
+          return;
+        }
+        version.current = result.version;
+        setForm((old) => ({ ...old, version: result.version }));
+        setScheduleState({
+          ...scheduleState,
+          status: 'CANCELLED',
+          lastError: 'Cancelled by an administrator.',
+        });
+        setStatus('Schedule cancelled');
+        setMessage(
+          post.published
+            ? 'The current published version remains live.'
+            : 'The draft remains private.',
+        );
+      }
+    } catch {
+      setMessage('The schedule could not be updated. Retry when the connection is available.');
+      setStatus('Schedule update failed');
+    } finally {
+      actionLock.current = false;
+      setActionBusy(false);
     }
   }
   return (
@@ -682,6 +794,65 @@ export function ArticleEditor({ post }: Props) {
               </label>
             ))}
           </section>
+          {post.admin && (
+            <section className="schedule-panel" aria-labelledby="schedule-heading">
+              <h2 id="schedule-heading">Scheduled publication</h2>
+              {scheduleState && (
+                <div className="schedule-status" role="status">
+                  <strong>
+                    {scheduleState.status === 'PENDING' || scheduleState.status === 'RETRY'
+                      ? 'Queued'
+                      : scheduleState.status === 'PUBLISHED'
+                        ? 'Published'
+                        : scheduleState.status === 'NEEDS_REVIEW'
+                          ? 'Needs review'
+                          : scheduleState.status === 'FAILED'
+                            ? 'Failed'
+                            : 'Cancelled'}
+                  </strong>
+                  <span>{formatHarareDateTime(new Date(scheduleState.runAt))}</span>
+                  {scheduleState.attempts > 0 && (
+                    <span>Worker attempts: {scheduleState.attempts} of 5</span>
+                  )}
+                  {scheduleState.lastError && <p>{scheduleState.lastError}</p>}
+                </div>
+              )}
+              <label htmlFor="schedule-local-time">
+                Publish time in Zimbabwe (CAT, Africa/Harare)
+              </label>
+              <input
+                id="schedule-local-time"
+                type="datetime-local"
+                value={scheduleLocal}
+                onChange={(event) => setScheduleLocal(event.target.value)}
+                disabled={actionBusy}
+              />
+              <p>
+                Times are stored in UTC. The worker must be called by a configured hosting schedule;
+                without that trigger, the article stays queued and private.
+              </p>
+              <div className="schedule-actions">
+                <button
+                  className="button button-small"
+                  disabled={actionBusy}
+                  onClick={() => void runScheduleAction('schedule')}
+                >
+                  {scheduleState?.status === 'PENDING' || scheduleState?.status === 'RETRY'
+                    ? 'Reschedule'
+                    : 'Schedule publication'}
+                </button>
+                {(scheduleState?.status === 'PENDING' || scheduleState?.status === 'RETRY') && (
+                  <button
+                    className="button button-small button-outline"
+                    disabled={actionBusy}
+                    onClick={() => void runScheduleAction('cancel')}
+                  >
+                    Cancel schedule
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
         </aside>
       </fieldset>
     </div>

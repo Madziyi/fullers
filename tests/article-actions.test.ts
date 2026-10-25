@@ -7,6 +7,7 @@ const { mockDb, mockRequireUser, mockRequireAdmin } = vi.hoisted(() => ({
     postCategory: { findUnique: vi.fn() },
     tag: { findMany: vi.fn() },
     media: { count: vi.fn() },
+    publicationJob: { updateMany: vi.fn() },
     $transaction: vi.fn(),
   },
   mockRequireUser: vi.fn(),
@@ -17,6 +18,8 @@ vi.mock('@/lib/auth', () => ({ requireUser: mockRequireUser, requireAdmin: mockR
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 import {
   publishArticle,
+  scheduleArticle,
+  cancelArticleSchedule,
   saveArticle,
   unpublishArticle,
 } from '@/app/admin/(protected)/posts/actions';
@@ -49,6 +52,16 @@ describe('article action authorization and conflict boundaries', () => {
   it('denies editor calls to publish and unpublish even when directly invoked', async () => {
     await expect(publishArticle('c123456789012345678901234', 4)).rejects.toThrow('Administrator');
     await expect(unpublishArticle('c123456789012345678901234')).rejects.toThrow('Administrator');
+    await expect(
+      scheduleArticle({
+        id: 'c123456789012345678901234',
+        version: 4,
+        localDateTime: '2026-10-26T09:00',
+      }),
+    ).rejects.toThrow('Administrator');
+    await expect(cancelArticleSchedule('c123456789012345678901234', 4)).rejects.toThrow(
+      'Administrator',
+    );
     expect(mockDb.post.findUnique).not.toHaveBeenCalled();
   });
 
@@ -74,9 +87,13 @@ describe('article action authorization and conflict boundaries', () => {
     mockDb.product.findMany.mockResolvedValue([]);
     mockDb.postCategory.findUnique.mockResolvedValue(null);
     mockDb.tag.findMany.mockResolvedValue([]);
+    mockDb.publicationJob.updateMany.mockResolvedValue({ count: 0 });
     const updateMany = vi.fn().mockResolvedValue({ count: 0 });
     mockDb.$transaction.mockImplementation(async (work: (tx: unknown) => unknown) =>
-      work({ post: { updateMany } }),
+      work({
+        post: { updateMany },
+        publicationJob: { updateMany: mockDb.publicationJob.updateMany },
+      }),
     );
     const result = await saveArticle(validDraft({ version: 3 }));
     expect(result).toEqual({ ok: false, error: 'conflict' });
@@ -89,6 +106,29 @@ describe('article action authorization and conflict boundaries', () => {
         }),
       }),
     );
+  });
+
+  it('rolls back schedule invalidation when an editor save uses a stale version', async () => {
+    mockDb.post.findUnique.mockResolvedValue({
+      authorId: 'editor-1',
+      version: 5,
+      deletedAt: null,
+      publishedSlug: null,
+      status: 'SCHEDULED',
+    });
+    mockDb.product.findMany.mockResolvedValue([]);
+    mockDb.postCategory.findUnique.mockResolvedValue(null);
+    mockDb.tag.findMany.mockResolvedValue([]);
+    mockDb.publicationJob.updateMany.mockResolvedValue({ count: 1 });
+    const updateMany = vi.fn().mockResolvedValue({ count: 0 });
+    mockDb.$transaction.mockImplementation(async (work: (tx: unknown) => unknown) =>
+      work({
+        post: { updateMany },
+        publicationJob: { updateMany: mockDb.publicationJob.updateMany },
+      }),
+    );
+    const result = await saveArticle(validDraft({ version: 4 }));
+    expect(result).toEqual({ ok: false, error: 'conflict' });
   });
 
   it('refuses uploaded media owned by another article', async () => {

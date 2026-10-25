@@ -4,7 +4,9 @@ import { randomUUID } from 'node:crypto';
 import { db } from '@/lib/db';
 import { requireUser, requireAdmin } from '@/lib/auth';
 import { z } from 'zod';
-import { articleBodySchema, articleSnapshotSchema, safeImageSrc } from '@/lib/articles';
+import { articleBodySchema, safeImageSrc } from '@/lib/articles';
+import { buildPublicationSnapshot, publicationInclude } from '@/lib/article-publication';
+import { harareLocalToUtc } from '@/lib/scheduling-time';
 import { publicWhere } from '@/lib/catalogue';
 
 function slugify(value: string) {
@@ -85,7 +87,13 @@ export async function saveArticle(rawInput: unknown) {
   const slug = input.slug.trim() ? slugify(input.slug) : `draft-${input.id}`;
   const post = await db.post.findUnique({
     where: { id: input.id },
-    select: { authorId: true, version: true, deletedAt: true, publishedSlug: true },
+    select: {
+      authorId: true,
+      version: true,
+      deletedAt: true,
+      publishedSlug: true,
+      status: true,
+    },
   });
   if (!post || post.deletedAt || (user.role !== 'ADMIN' && post.authorId !== user.id))
     return { ok: false as const, error: 'This article is unavailable.' };
@@ -123,9 +131,18 @@ export async function saveArticle(rawInput: unknown) {
       };
   }
   const draftSlug = post.publishedSlug ?? slug;
-  let updated: { version: number } | null;
+  let updated: { version: number; scheduleConflict: boolean } | null;
   try {
     updated = await db.$transaction(async (tx) => {
+      // Jobs are locked before the post to keep the same lock order as the worker.
+      const invalidatedSchedule = await tx.publicationJob.updateMany({
+        where: { postId: input.id, status: { in: ['PENDING', 'RETRY'] } },
+        data: {
+          status: 'NEEDS_REVIEW',
+          lastError: 'The saved draft changed after scheduling. Review and schedule it again.',
+          finishedAt: new Date(),
+        },
+      });
       const result = await tx.post.updateMany({
         where: {
           id: input.id,
@@ -137,6 +154,12 @@ export async function saveArticle(rawInput: unknown) {
           slug: draftSlug,
           excerpt: input.excerpt.trim(),
           body: input.body,
+          ...(invalidatedSchedule.count
+            ? {
+                status: post.status === 'SCHEDULED' ? 'DRAFT' : post.status,
+                publishAt: null,
+              }
+            : {}),
           seo: {
             title: input.seoTitle.trim(),
             description: input.seoDescription.trim(),
@@ -147,7 +170,10 @@ export async function saveArticle(rawInput: unknown) {
           version: { increment: 1 },
         },
       });
-      if (!result.count) return null;
+      if (!result.count) {
+        if (invalidatedSchedule.count) throw new Error('ARTICLE_SCHEDULE_CONFLICT');
+        return null;
+      }
       await tx.post.update({
         where: { id: input.id },
         data: {
@@ -158,9 +184,15 @@ export async function saveArticle(rawInput: unknown) {
           tags: { set: tags.map((tag) => ({ id: tag.id })) },
         },
       });
-      return tx.post.findUniqueOrThrow({ where: { id: input.id }, select: { version: true } });
+      const savedPost = await tx.post.findUniqueOrThrow({
+        where: { id: input.id },
+        select: { version: true },
+      });
+      return { ...savedPost, scheduleConflict: invalidatedSchedule.count > 0 };
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'ARTICLE_SCHEDULE_CONFLICT')
+      return { ok: false as const, error: 'conflict' };
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002')
       return {
         ok: false as const,
@@ -170,20 +202,17 @@ export async function saveArticle(rawInput: unknown) {
   }
   if (!updated) return { ok: false as const, error: 'conflict' };
   revalidatePath(`/admin/posts/${input.id}`);
-  return { ok: true as const, version: updated.version };
+  return {
+    ok: true as const,
+    version: updated.version,
+    scheduleConflict: updated.scheduleConflict,
+  };
 }
 export async function publishArticle(id: string, version: number) {
   const user = await requireAdmin();
   const post = await db.post.findUnique({
     where: { id },
-    include: {
-      author: true,
-      category: true,
-      tags: true,
-      cover: true,
-      publishedRevision: { select: { version: true } },
-      products: { where: publicWhere(), select: { slug: true } },
-    },
+    include: publicationInclude,
   });
   if (!post || post.version !== version || post.deletedAt)
     return { ok: false as const, error: 'This draft changed. Reload before publishing.' };
@@ -195,66 +224,47 @@ export async function publishArticle(id: string, version: number) {
     post.publishedRevision?.version === version
   )
     return { ok: true as const, version };
-  if (post.title.trim().length < 5 || post.excerpt.trim().length < 20 || !post.body)
-    return {
-      ok: false as const,
-      error: 'Add a title, useful excerpt and article content before publishing.',
-    };
-  const slug = post.publishedSlug ?? post.slug;
+  const publication = buildPublicationSnapshot(post, new Date());
+  if (!publication.ok) return publication;
+  const { slug, snapshot } = publication;
   const conflict = await db.post.findFirst({ where: { slug, id: { not: id }, deletedAt: null } });
   if (conflict) return { ok: false as const, error: 'That public slug is already in use.' };
-  const parsedBody = articleBodySchema.safeParse(post.body);
-  if (!parsedBody.success) return { ok: false as const, error: 'Article structure is invalid.' };
-  if (parsedBody.data.blocks.length === 0)
-    return { ok: false as const, error: 'Add useful article content before publishing.' };
-  const productTargets = parsedBody.data.blocks.flatMap((block) =>
-    block.type === 'link' && block.href.startsWith('/products/')
-      ? [block.href.slice('/products/'.length)]
-      : [],
-  );
-  if (productTargets.some((slug) => !post.products.some((product) => product.slug === slug)))
-    return {
-      ok: false as const,
-      error: 'Connect each linked product in Related products before publishing.',
-    };
-  const seo = post.seo as {
-    title?: string;
-    description?: string;
-    authorName?: string;
-    coverSrc?: string | null;
-    coverAlt?: string;
-  } | null;
-  const snapshot = articleSnapshotSchema.safeParse({
-    title: post.title,
-    slug,
-    excerpt: post.excerpt,
-    authorName: seo?.authorName || post.author.name,
-    categoryName: post.category?.name ?? null,
-    tagNames: post.tags.map((tag) => tag.name),
-    body: parsedBody.data,
-    coverSrc: seo?.coverSrc ?? post.cover?.storageKey ?? null,
-    coverAlt: seo?.coverAlt ?? post.coverAlt ?? '',
-    seoTitle: seo?.title || post.title,
-    seoDescription: seo?.description || post.excerpt,
-    productSlugs: post.products.map((product) => product.slug),
-    publishedAt: new Date().toISOString(),
-  });
-  if (!snapshot.success)
-    return {
-      ok: false as const,
-      error:
-        'Complete the article title, excerpt, image text and search description before publishing.',
-    };
+  let changed: boolean;
   try {
-    await db.$transaction(async (tx) => {
+    changed = await db.$transaction(async (tx) => {
+      await tx.publicationJob.updateMany({
+        where: { postId: id, status: { in: ['PENDING', 'RETRY'] } },
+        data: {
+          status: 'CANCELLED',
+          lastError: 'The article was published manually before its scheduled time.',
+          finishedAt: new Date(),
+        },
+      });
+      // A scheduled worker and this manual action can race on the same saved
+      // version. Re-read after locking/cancelling jobs so a worker that already
+      // promoted this version makes the manual retry a no-op, not a duplicate
+      // immutable revision.
+      const latest = await tx.post.findUnique({
+        where: { id },
+        select: {
+          version: true,
+          deletedAt: true,
+          publishedRevisionId: true,
+          publishedRevision: { select: { version: true } },
+        },
+      });
+      if (!latest || latest.deletedAt || latest.version !== version)
+        throw new Error('ARTICLE_CONFLICT');
+      if (latest.publishedRevision?.version === version) return false;
       const revision = await tx.postRevision.create({
-        data: { postId: id, actorId: user.id, version: post.version, snapshot: snapshot.data },
+        data: { postId: id, actorId: user.id, version: post.version, snapshot },
       });
       const updated = await tx.post.updateMany({
-        where: { id, version, publishedRevisionId: post.publishedRevisionId },
+        where: { id, version, publishedRevisionId: latest.publishedRevisionId },
         data: {
           status: 'PUBLISHED',
-          publishedAt: new Date(snapshot.data.publishedAt),
+          publishedAt: new Date(snapshot.publishedAt as string),
+          publishAt: null,
           publishedSlug: slug,
           publishedRevisionId: revision.id,
         },
@@ -269,12 +279,14 @@ export async function publishArticle(id: string, version: number) {
           changes: { version: post.version, slug },
         },
       });
+      return true;
     });
   } catch (error) {
     if (error instanceof Error && error.message === 'ARTICLE_CONFLICT')
       return { ok: false as const, error: 'This draft changed. Reload before publishing.' };
     throw error;
   }
+  if (!changed) return { ok: true as const, version };
   revalidatePath('/blog');
   revalidatePath('/sitemap.xml');
   revalidatePath('/');
@@ -283,6 +295,14 @@ export async function publishArticle(id: string, version: number) {
 export async function unpublishArticle(id: string) {
   const user = await requireAdmin();
   const changed = await db.$transaction(async (tx) => {
+    await tx.publicationJob.updateMany({
+      where: { postId: id, status: { in: ['PENDING', 'RETRY'] } },
+      data: {
+        status: 'CANCELLED',
+        lastError: 'The article was unpublished before its scheduled time.',
+        finishedAt: new Date(),
+      },
+    });
     const post = await tx.post.findUnique({
       where: { id },
       select: { publishedRevisionId: true, status: true },
@@ -294,6 +314,7 @@ export async function unpublishArticle(id: string) {
       data: {
         status: 'DRAFT',
         publishedAt: null,
+        publishAt: null,
         publishedRevisionId: null,
         version: { increment: 1 },
       },
@@ -308,4 +329,133 @@ export async function unpublishArticle(id: string) {
   revalidatePath('/sitemap.xml');
   revalidatePath('/');
   return { ok: true as const, changed };
+}
+
+const scheduleInput = z.object({
+  id: z.string().cuid(),
+  version: z.number().int().positive(),
+  localDateTime: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
+});
+
+export async function scheduleArticle(rawInput: unknown) {
+  const actor = await requireAdmin();
+  const parsed = scheduleInput.safeParse(rawInput);
+  if (!parsed.success)
+    return { ok: false as const, error: 'Choose a valid Zimbabwe date and time.' };
+  const runAt = harareLocalToUtc(parsed.data.localDateTime);
+  const now = new Date();
+  if (!runAt || runAt.getTime() <= now.getTime() + 60_000)
+    return { ok: false as const, error: 'Choose a future time in Africa/Harare.' };
+  const post = await db.post.findUnique({
+    where: { id: parsed.data.id },
+    include: publicationInclude,
+  });
+  if (!post || post.deletedAt || post.status === 'ARCHIVED')
+    return { ok: false as const, error: 'This article is unavailable to schedule.' };
+  if (post.version !== parsed.data.version)
+    return { ok: false as const, error: 'This draft changed. Reload before scheduling it.' };
+  if (post.publishedRevision?.version === post.version)
+    return { ok: false as const, error: 'Publish updates before scheduling another publication.' };
+  const publication = buildPublicationSnapshot(post, runAt);
+  if (!publication.ok) return publication;
+  const jobId = randomUUID();
+  try {
+    const version = await db.$transaction(async (tx) => {
+      await tx.publicationJob.updateMany({
+        where: { postId: post.id, status: { in: ['PENDING', 'RETRY'] } },
+        data: {
+          status: 'CANCELLED',
+          lastError: 'Replaced by a newer schedule.',
+          finishedAt: now,
+        },
+      });
+      const update = await tx.post.updateMany({
+        where: {
+          id: post.id,
+          version: parsed.data.version,
+          publishedRevisionId: post.publishedRevisionId,
+          status: post.status,
+        },
+        data: {
+          status: post.status === 'PUBLISHED' ? 'PUBLISHED' : 'SCHEDULED',
+          publishAt: runAt,
+          version: { increment: 1 },
+        },
+      });
+      if (!update.count) throw new Error('ARTICLE_SCHEDULE_CONFLICT');
+      const scheduledVersion = parsed.data.version + 1;
+      await tx.publicationJob.create({
+        data: {
+          id: jobId,
+          postId: post.id,
+          scheduledById: actor.id,
+          scheduledVersion,
+          runAt,
+          nextAttemptAt: runAt,
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.id,
+          action: 'SCHEDULE_PUBLICATION',
+          entity: 'Post',
+          entityId: post.id,
+          changes: { runAt: runAt.toISOString(), version: scheduledVersion },
+        },
+      });
+      return scheduledVersion;
+    });
+    revalidatePath('/admin/posts');
+    revalidatePath(`/admin/posts/${post.id}`);
+    return { ok: true as const, version, jobId, runAt: runAt.toISOString() };
+  } catch (error) {
+    if (error instanceof Error && error.message === 'ARTICLE_SCHEDULE_CONFLICT')
+      return { ok: false as const, error: 'This draft changed. Reload before scheduling it.' };
+    throw error;
+  }
+}
+
+export async function cancelArticleSchedule(id: string, version: number) {
+  const actor = await requireAdmin();
+  let result: { changed: boolean; version: number };
+  try {
+    result = await db.$transaction(async (tx) => {
+      const jobs = await tx.publicationJob.updateMany({
+        where: { postId: id, status: { in: ['PENDING', 'RETRY'] }, scheduledVersion: version },
+        data: {
+          status: 'CANCELLED',
+          lastError: 'Cancelled by an administrator.',
+          finishedAt: new Date(),
+        },
+      });
+      if (!jobs.count) return { changed: false as const, version };
+      const post = await tx.post.findUnique({ where: { id }, select: { status: true } });
+      if (!post) return { changed: false as const, version };
+      const updated = await tx.post.updateMany({
+        where: { id, version },
+        data: {
+          status: post.status === 'SCHEDULED' ? 'DRAFT' : post.status,
+          publishAt: null,
+          version: { increment: 1 },
+        },
+      });
+      if (!updated.count) throw new Error('ARTICLE_SCHEDULE_CONFLICT');
+      await tx.auditLog.create({
+        data: { actorId: actor.id, action: 'CANCEL_PUBLICATION', entity: 'Post', entityId: id },
+      });
+      return { changed: true as const, version: version + 1 };
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'ARTICLE_SCHEDULE_CONFLICT')
+      return {
+        ok: false as const,
+        error: 'This article changed while cancelling. Reload and review its schedule.',
+      };
+    throw error;
+  }
+  revalidatePath('/admin/posts');
+  revalidatePath(`/admin/posts/${id}`);
+  if (!result.changed && result.version === version)
+    return { ok: false as const, error: 'This schedule is no longer pending.' };
+  return { ok: true as const, ...result };
 }

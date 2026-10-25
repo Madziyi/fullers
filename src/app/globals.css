@@ -1285,6 +1285,40 @@ fieldset.article-workspace {
   font-size: 0.9rem;
   line-height: 1.55;
 }
+.schedule-panel label {
+  margin: 1rem 0 0.45rem;
+}
+.schedule-panel input[type='datetime-local'] {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #cbd0cc;
+  border-radius: 3px;
+  padding: 0.6rem;
+  color: var(--ink);
+  background: white;
+  font: inherit;
+}
+.schedule-status {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.8rem;
+  margin: 0 0 1rem;
+  border-left: 3px solid var(--blue);
+  background: white;
+  font-size: 0.9rem;
+}
+.schedule-status p {
+  margin: 0;
+}
+.schedule-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.schedule-actions .button {
+  min-height: 42px;
+}
 .taxonomy-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;

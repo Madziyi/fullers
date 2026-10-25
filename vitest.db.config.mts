@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['tests/enquiries.integration.ts'],
+    include: ['tests/enquiries.integration.ts', 'tests/publication-worker.integration.ts'],
     environment: 'node',
     fileParallelism: false,
     testTimeout: 15000,

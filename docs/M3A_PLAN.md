@@ -1,6 +1,6 @@
 # M3A — article editor and publishing
 
-Status: M3A implementation complete and awaiting review. The confirmed M3A scope is implemented and locally verified; M3B remains a separate review/authorization boundary.
+Status: M3A review is complete in PR #3; the user authorized M3B. This remains the historical M3A plan.
 
 ## Confirmed decisions
 
@@ -51,10 +51,10 @@ A first-pass upload policy can allow JPEG, PNG and WebP with explicit byte/pixel
 
 ## Explicitly later in M3
 
-- M3B: Zimbabwe-time scheduling, reliable server worker with authorization/idempotence/retries, revision browsing and restore UI.
+- M3B: Zimbabwe-time scheduling and reliable worker with authorization/idempotence/retries. User confirmed revision browsing/restore is not required and explicitly asked for safe handling of edits that conflict with scheduled versions.
 - M3C: complete product editors and media library management.
 - M3D: page sections, real-project approval workflow, enquiry management, redirects, users/roles and audit UI.
-- M3A explicitly defers tables, FAQ blocks and code formatting. Add them in a later reviewed slice. M3B retains operational Zimbabwe-time scheduling, reliable worker retries/missed-job handling, and revision browsing/restore. M3A does persist immutable publication snapshots and protects them from draft edits, but does not provide user-facing revision history.
+- M3A explicitly defers tables, FAQ blocks and code formatting. Add them in a later reviewed slice. M3B retains operational Zimbabwe-time scheduling and reliable worker retries/missed-job handling with safe scheduled-version conflicts. Revision browsing/restore is not required by the user. M3A still persists immutable publication snapshots, which are needed to keep published content stable.
 
 ## Acceptance and review
 

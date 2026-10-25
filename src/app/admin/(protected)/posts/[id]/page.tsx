@@ -14,12 +14,23 @@ export default async function EditArticle({ params }: { params: Promise<{ id: st
       author: { select: { name: true } },
       products: { where: publicWhere(), select: { id: true, name: true, slug: true } },
       tags: true,
+      publicationJobs: { orderBy: { createdAt: 'desc' }, take: 5 },
     },
   });
   if (!post) notFound();
-  const availableProducts=await db.product.findMany({where:publicWhere(),select:{id:true,name:true,slug:true},orderBy:{sortOrder:'asc'}});
+  const availableProducts = await db.product.findMany({
+    where: publicWhere(),
+    select: { id: true, name: true, slug: true },
+    orderBy: { sortOrder: 'asc' },
+  });
   const body = articleBodySchema.safeParse(post.body);
-  const seo = post.seo as { title?: string; description?: string; authorName?:string;coverSrc?:string|null;coverAlt?:string } | null;
+  const seo = post.seo as {
+    title?: string;
+    description?: string;
+    authorName?: string;
+    coverSrc?: string | null;
+    coverAlt?: string;
+  } | null;
   return (
     <ArticleEditor
       post={{
@@ -45,6 +56,17 @@ export default async function EditArticle({ params }: { params: Promise<{ id: st
         products: availableProducts,
         published: post.publishedRevisionId !== null,
         slugLocked: post.publishedSlug !== null,
+        defaultScheduleLocal: '',
+        schedule: post.publicationJobs[0]
+          ? {
+              id: post.publicationJobs[0].id,
+              status: post.publicationJobs[0].status,
+              runAt: post.publicationJobs[0].runAt.toISOString(),
+              attempts: post.publicationJobs[0].attempts,
+              lastError: post.publicationJobs[0].lastError,
+              scheduledVersion: post.publicationJobs[0].scheduledVersion,
+            }
+          : null,
         admin: user.role === 'ADMIN',
       }}
     />

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createArticle } from './actions';
+import { formatHarareDateTime } from '@/lib/scheduling-time';
 export default async function ArticlesPage() {
   const user = await requireUser();
   const posts = await db.post.findMany({
@@ -13,6 +14,12 @@ export default async function ArticlesPage() {
       status: true,
       updatedAt: true,
       author: { select: { name: true } },
+      publicationJobs: {
+        where: { status: { in: ['PENDING', 'RETRY', 'NEEDS_REVIEW', 'FAILED'] } },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { status: true, runAt: true },
+      },
     },
   });
   async function create() {
@@ -51,7 +58,21 @@ export default async function ArticlesPage() {
                     {post.title || 'Untitled article'}
                   </Link>
                 </td>
-                <td>{post.status === 'PUBLISHED' ? 'Published' : 'Draft'}</td>
+                <td>
+                  {post.publicationJobs[0]?.status === 'PENDING'
+                    ? `Scheduled · ${formatHarareDateTime(post.publicationJobs[0].runAt)}`
+                    : post.publicationJobs[0]?.status === 'RETRY'
+                      ? `Retrying · ${formatHarareDateTime(post.publicationJobs[0].runAt)}`
+                      : post.publicationJobs[0]?.status === 'NEEDS_REVIEW'
+                        ? 'Schedule needs review'
+                        : post.publicationJobs[0]?.status === 'FAILED'
+                          ? 'Schedule failed'
+                          : post.status === 'PUBLISHED'
+                            ? 'Published'
+                            : post.status === 'SCHEDULED'
+                              ? 'Scheduled'
+                              : 'Draft'}
+                </td>
                 <td>{post.author.name}</td>
                 <td>{post.updatedAt.toLocaleDateString('en-ZW')}</td>
               </tr>

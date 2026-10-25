@@ -62,3 +62,12 @@ Parent review completed after Luna high implementation. Published the feature br
 - Opened and attached M2 PR https://github.com/Madziyi/fullers/pull/2, stacked on the reviewed M1 branch. CI repeats all checks; no merge, deployment or M3 implementation performed.
 
 - M3 discussion decisions confirmed: article editing/publishing first; editors draft, administrators publish; scheduling displays Africa/Harare with UTC persistence. Prepared docs/M3A_PLAN.md with publication snapshots, autosave/conflict boundaries, safe media, public article routes and acceptance checks. Planning only; no application implementation started.
+
+## 2026-10-25 — M3B publishing reliability
+
+- User authorized M3B on a branch stacked after M3A, explicitly excluded revision restore UI and required safe conflicting-edit behavior. Updated the M3 plan/agent guidance before implementation.
+- Added a durable publication-job schema and migration. Admin scheduling uses an explicit Africa/Harare wall clock and UTC storage; schedules bind to a post version. Saved edits invalidate the pending version and leave the article private or preserve the current public snapshot.
+- Added authenticated internal POST worker with bounded batch claims (`FOR UPDATE SKIP LOCKED`), exact-version validation, atomic immutable-snapshot promotion, idempotence and capped transient retries. Terminal conflicts/failures are visible in the editor/list. Production cron/provider and its secret remain unconfigured and documented as release work.
+- Closed a manual-publish/worker race by rechecking the current published pointer after schedule locking; cancellation now reports a version conflict clearly.
+- Verification passed: strict TypeScript, ESLint, 51 unit tests, PostgreSQL seed/constraint and worker integration tests, isolated production build, and all 20 desktop/mobile Playwright tests. Browser coverage verifies Harare scheduling, pre-publication privacy and conflict invalidation. Added `docs/M3B_QA.md` and desktop/mobile schedule screenshots. Isolated browser/build output used port 3117; the user's preview on 3107 was preserved.
+- No revision browser/restore UI, production deployment, hosting scheduler or old-website changes were made. Opened and attached [M3B PR #4](https://github.com/Madziyi/fullers/pull/4), stacked on M3A; both GitHub Actions runs passed. No PR was merged.
