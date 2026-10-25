@@ -7,3 +7,15 @@ Use strict TypeScript, server-rendered public content and server-side authorizat
 Update NOW.md, TASKS.md and LOG.md with each meaningful slice. Run lint, typecheck, unit tests, production build and relevant browser checks. Record limits honestly. M3 owns full editing, scheduling and revision UX; M1 establishes models and access boundaries. Do not proceed to the next milestone before M1 review.
 
 M1 design has been reviewed and M2 authorized. Follow docs/M2_PLAN.md for the public-page/enquiry slice. Enquiry data is private and administrator-only; do not log personal information, expose public lookup endpoints or claim notification delivery without a configured provider. Preserve any user-run preview server. M3 remains a separate review boundary.
+
+Authentication forms must use POST even before hydration and remain disabled until the secure handler is ready. Verify login in both development and production: Webpack refresh needs development-only eval permission; production must never inherit it. Never log or repeat credentials from URLs. Redirect legacy credential query strings to a clean login URL.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

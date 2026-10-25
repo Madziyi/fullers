@@ -1,5 +1,7 @@
 # Current work
 
+Login follow-up: repaired the development CSP that blocked hydration, added POST-only/pre-hydration-safe login, stripped legacy credential query strings and suppressed those request logs. Added development login regression coverage to CI. The exposed localhost QA password is replaced in ignored .env; use the current ADMIN_PASSWORD entry rather than terminal/chat history. M2 features and review boundary are unchanged.
+
 M2 is implemented on `feat/m2-public-pages`, based on the reviewed M1 branch. The user approved the M1 local design and authorized the next public sections. See docs/M2_PLAN.md and docs/M2_QA.md.
 
 Delivered: source-backed About, Services and Contact pages; connected navigation, product-selected quote form, metadata/breadcrumbs/sitemap; validated private enquiry intake with consent, signed tokens, honeypot, origin checks, atomic database quotas and idempotence; administrator-only paginated inbox/detail reads.

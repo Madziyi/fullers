@@ -13,7 +13,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "node --env-file-if-exists=.env --import tsx prisma/seed.ts",
-    "test:db": "node --env-file-if-exists=.env --import tsx tests/database.ts && node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.db.config.mts"
+    "test:db": "node --env-file-if-exists=.env --import tsx tests/database.ts && node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.db.config.mts",
+    "test:dev": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test --config playwright.dev.config.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

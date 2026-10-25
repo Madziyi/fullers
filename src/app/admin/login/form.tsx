@@ -1,8 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+const subscribe = () => () => {};
 export function LoginForm() {
+  const hydrated = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const router = useRouter();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -29,7 +35,7 @@ export function LoginForm() {
     setBusy(false);
   }
   return (
-    <form onSubmit={submit}>
+    <form method="post" action="/api/auth/callback/credentials" onSubmit={submit}>
       <div className="field">
         <label htmlFor="email">Email address</label>
         <input
@@ -48,7 +54,7 @@ export function LoginForm() {
           name="password"
           type="password"
           autoComplete="current-password"
-          maxLength={200}
+          maxLength={72}
           required
         />
       </div>
@@ -57,7 +63,8 @@ export function LoginForm() {
           {error}
         </p>
       )}
-      <button type="submit" className="button" disabled={busy}>
+      {!hydrated && <p className="form-hint">Enable JavaScript to sign in securely.</p>}
+      <button type="submit" className="button" disabled={!hydrated || busy}>
         {busy ? 'Signing in…' : 'Sign in →'}
       </button>
     </form>

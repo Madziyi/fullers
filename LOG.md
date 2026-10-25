@@ -1,5 +1,12 @@
 # Decision log
 
+## Local login repair
+
+- Reproduced Webpack React Refresh failing under the production-style CSP in development. Enabled eval only for development; production retains its stricter script policy.
+- Login now has an explicit POST action and is disabled before hydration. Legacy credential query strings redirect to the clean page and are excluded from development request logging.
+- Verified the local account hash/configuration without displaying credentials. Replaced the exposed localhost-only QA password in ignored .env. Added development-mode login/inbox and unhydrated safety regression tests to CI; no authentication protections or roles were bypassed.
+- Final login verification passed at the normal local origin after restarting only the verified Fullers dev process. Strict types, lint, 28 unit tests and two dedicated development browser tests passed. A production build passed with eval excluded; CI repeats production and development coverage. The final replacement password remains only in ignored local .env.
+
 ## M2 start
 
 - User approved the local M1 design and authorized the next sections. Scoped M2 to remaining public pages and a complete private enquiry workflow; M3 publishing remains deferred.

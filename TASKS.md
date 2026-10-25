@@ -7,6 +7,7 @@
 - [x] M1: lint, types, unit/integration checks and responsive screenshots
 - [x] M1: open review PR with hosted CI configured
 - [x] M2: complete about, services and contact enquiry workflow
+  - [x] Repair development login hydration and prevent credential GET fallback; add dev-mode CI checks
   - [x] Plan and source-backed page designs
   - [x] Validated private enquiry intake with spam/rate/retry protection
   - [x] Administrator inbox reads and connected public navigation

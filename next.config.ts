@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
+import { contentSecurityPolicy } from './src/lib/security-headers';
 const config: NextConfig = {
   poweredByHeader: false,
+  logging: { incomingRequests: { ignore: [/\/admin\/login\?.*(?:email|password)=/i] } },
   distDir: process.env.NEXT_BUILD_DIR || '.next',
   turbopack: { root: process.cwd() },
   async headers() {
@@ -14,8 +16,7 @@ const config: NextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           {
             key: 'Content-Security-Policy',
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+            value: contentSecurityPolicy(process.env.NODE_ENV === 'development'),
           },
         ],
       },
