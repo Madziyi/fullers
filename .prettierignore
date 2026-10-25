@@ -1,0 +1,13 @@
+node_modules
+.next
+.local-tools
+package-lock.json
+assets
+public/assets
+docs/screenshots
+playwright-report
+test-results
+SPEC.md
+CONTENT_AND_ASSET_INVENTORY.md
+CODEX_START_PROMPT.md
+next-env.d.ts
