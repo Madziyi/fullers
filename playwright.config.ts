@@ -1,11 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
+const port = process.env.PLAYWRIGHT_PORT || '3107';
+const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
   workers: 1,
   timeout: 45000,
   reporter: [['list'], ['html', { open: 'never' }]],
-  use: { baseURL: 'http://127.0.0.1:3107', trace: 'retain-on-failure' },
+  use: { baseURL, trace: 'retain-on-failure' },
   projects: [
     {
       name: 'desktop',
@@ -17,8 +19,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3107',
-    url: 'http://127.0.0.1:3107',
+    command: `node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port ${port}`,
+    url: baseURL,
     reuseExistingServer: false,
     timeout: 120000,
   },

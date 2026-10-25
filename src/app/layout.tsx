@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { siteUrl } from '@/lib/seo';
 import './globals.css';
+import './public-pages.css';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {

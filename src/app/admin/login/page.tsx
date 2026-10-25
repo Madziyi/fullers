@@ -1,6 +1,13 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { LoginForm } from './form';
-export default function Login() {
+export default async function Login({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const query = await searchParams;
+  if ('password' in query || 'email' in query) redirect('/admin/login');
   return (
     <main id="main" className="admin-login">
       <div className="login-story">
