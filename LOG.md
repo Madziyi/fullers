@@ -18,3 +18,5 @@
 
 - Final validation: strict types, ESLint, 17 unit tests, database integration, idempotent seed and production build passed. All 12 desktop/mobile Playwright tests passed; selected WCAG A/AA scans report zero violations. Refreshed screenshots committed for review.
 - Isolated E2E on port 3107 with server reuse disabled after a separate local application occupied 3000; no unrelated process was stopped.
+
+- Opened and attached https://github.com/Madziyi/fullers/pull/1 with review screenshots, validation and remaining tasks. GitHub Actions is running; no merge, deployment or next-milestone work performed.
