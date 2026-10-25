@@ -1,6 +1,6 @@
 # Current work
 
-M3A review and authorization gates are complete. M3B publishing reliability is implemented on `feat/m3b-publishing-reliability`, stacked on `feat/m3a-article-workflow`; review PR and hosted CI are pending. Scope: administrator scheduling in Africa/Harare, UTC-backed durable jobs, a protected worker with bounded retries, and exact-version conflict review. The user explicitly does not require revision restore UI. Plan and QA evidence: `docs/M3B_PLAN.md` and `docs/M3B_QA.md`.
+M3A review and authorization gates are complete. M3B publishing reliability is implemented on `feat/m3b-publishing-reliability`, stacked on `feat/m3a-article-workflow`; [PR #4](https://github.com/Madziyi/fullers/pull/4) is open and both hosted CI runs are green. Scope: administrator scheduling in Africa/Harare, UTC-backed durable jobs, a protected worker with bounded retries, and exact-version conflict review. The user explicitly does not require revision restore UI. Plan and QA evidence: `docs/M3B_PLAN.md` and `docs/M3B_QA.md`.
 
 Login follow-up: repaired the development CSP that blocked hydration, added POST-only/pre-hydration-safe login, stripped legacy credential query strings and suppressed those request logs. Added development login regression coverage to CI. The exposed localhost QA password is replaced in ignored .env; use the current ADMIN_PASSWORD entry rather than terminal/chat history. M2 features and review boundary are unchanged.
 

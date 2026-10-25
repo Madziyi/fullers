@@ -1,6 +1,6 @@
 # M3B — dependable scheduled publication
 
-Status: implementation and local QA complete on `feat/m3b-publishing-reliability`, stacked on M3A. Review PR/hosted CI are pending. User confirmed no revision restore UI is needed and explicitly asked to handle conflicting edits safely.
+Status: implementation and local QA complete on `feat/m3b-publishing-reliability`, stacked on M3A. [Review PR #4](https://github.com/Madziyi/fullers/pull/4) is open and hosted CI passed. User confirmed no revision restore UI is needed and explicitly asked to handle conflicting edits safely.
 
 ## Outcome
 

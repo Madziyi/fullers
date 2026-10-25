@@ -27,7 +27,7 @@
   - [x] Verify schedule privacy, stale-edit handling, worker concurrency and public snapshot safety
   - [x] Production build, strict types, lint, unit/database checks and desktop/mobile Playwright
   - [x] Capture M3B desktop/mobile scheduling screenshots
-  - [ ] Open M3B review PR and verify hosted CI
+  - [x] Open M3B review PR and verify hosted CI: [#4](https://github.com/Madziyi/fullers/pull/4); both Actions runs passed
   - [ ] Configure production cron/hosting trigger and worker secret before release
 - [ ] M4: staging, release hardening, backups/restore, redirects review and CWV/UAT
 
