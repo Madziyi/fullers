@@ -1140,6 +1140,315 @@ footer {
   color: var(--muted);
   line-height: 1.7;
 }
+.article-editor {
+  max-width: 1500px;
+}
+.article-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.article-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.article-toolbar button,
+.block-controls button,
+.article-block button {
+  font: inherit;
+  cursor: pointer;
+}
+.article-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 2rem;
+  align-items: start;
+  padding: 2rem 0 4rem;
+}
+fieldset.article-workspace {
+  min-width: 0;
+  margin: 0;
+  padding: 2rem 0 4rem;
+  border: 0;
+}
+.article-writing label,
+.article-sidebar label {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+.article-writing input,
+.article-writing textarea,
+.article-writing select,
+.article-sidebar input,
+.article-sidebar textarea,
+.article-sidebar select,
+.article-block select,
+.article-block input,
+.article-block textarea,
+.taxonomy-controls input,
+.taxonomy-controls select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #cbd0cc;
+  border-radius: 3px;
+  padding: 0.8rem;
+  color: var(--ink);
+  background: white;
+  font: inherit;
+}
+.article-writing input:focus,
+.article-writing textarea:focus,
+.article-writing select:focus,
+.article-sidebar input:focus,
+.article-sidebar textarea:focus,
+.article-sidebar select:focus,
+.article-block input:focus,
+.article-block textarea:focus,
+.article-block select:focus,
+.taxonomy-controls input:focus,
+.taxonomy-controls select:focus {
+  outline: 3px solid #9db4ca;
+  outline-offset: 2px;
+  border-color: var(--blue);
+}
+.article-writing > label:first-child input {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+.article-writing textarea,
+.article-block textarea,
+.article-sidebar textarea {
+  resize: vertical;
+}
+.block-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+}
+.block-controls button,
+.article-block button,
+.button-outline {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--ink);
+}
+.article-blocks {
+  display: grid;
+  gap: 1rem;
+}
+.article-block {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: #fafaf8;
+  display: grid;
+  gap: 0.65rem;
+}
+.article-block > button {
+  justify-self: end;
+  color: #8b2e20;
+}
+.article-sidebar {
+  position: sticky;
+  top: 5rem;
+  display: grid;
+  gap: 1rem;
+}
+.article-sidebar section {
+  padding: 1.2rem;
+  background: #f6f6f2;
+  border: 1px solid var(--line);
+}
+.article-sidebar h2 {
+  margin: 0.1rem 0 1rem;
+  font-size: 1.1rem;
+}
+.article-sidebar ul {
+  padding-left: 1.2rem;
+  line-height: 1.8;
+}
+.article-sidebar p,
+.search-preview {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.taxonomy-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+.taxonomy-controls label {
+  margin: 0;
+}
+.taxonomy-controls button,
+.block-controls button {
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.taxonomy-controls button:hover,
+.block-controls button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.search-preview {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.8rem;
+  background: #fff;
+}
+.search-preview strong {
+  color: #1a0dab;
+  font-size: 1.1rem;
+}
+.search-preview small {
+  font-size: 0.7rem;
+}
+.product-choice {
+  display: flex !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center;
+  gap: 0.6rem !important;
+  font-weight: 400 !important;
+}
+.product-choice input {
+  width: auto;
+}
+.blog-index {
+  padding-top: 5rem;
+  padding-bottom: 6rem;
+}
+.blog-index > h1 {
+  max-width: 850px;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+}
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+.blog-grid article {
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+}
+.blog-grid h2,
+.blog-grid h3 {
+  line-height: 1.2;
+}
+.blog-article {
+  padding-bottom: 6rem;
+}
+.blog-article header {
+  max-width: 850px;
+  margin: 4rem auto 2rem;
+}
+.blog-article header h1 {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.05;
+}
+.article-byline {
+  color: var(--muted);
+}
+.blog-cover {
+  max-width: 1000px;
+  margin: 2rem auto;
+}
+.blog-cover img,
+.article-content img {
+  width: 100%;
+  height: auto;
+}
+.blog-cover figcaption,
+.article-content figcaption {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.article-content {
+  max-width: 760px;
+  margin: 3rem auto;
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+.article-content h2 {
+  margin-top: 2.5em;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+.article-content h3 {
+  margin-top: 2em;
+  font-size: 1.5rem;
+}
+.article-content blockquote {
+  margin: 2rem 0;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid var(--blue);
+  background: #f6f6f2;
+}
+.article-content a,
+.article-products a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.article-products {
+  max-width: 760px;
+  margin: 2rem auto;
+}
+@media (max-width: 850px) {
+  .article-workspace {
+    grid-template-columns: 1fr;
+  }
+  .article-sidebar {
+    position: static;
+    grid-row: auto;
+  }
+  .article-writing {
+    grid-row: 1;
+  }
+  .article-sidebar {
+    grid-row: 2;
+  }
+  .taxonomy-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .taxonomy-controls label {
+    grid-column: 1/-1;
+  }
+  .taxonomy-controls button {
+    grid-column: 2;
+  }
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+  .article-toolbar {
+    align-items: flex-start;
+  }
+  .article-toolbar > div:last-child {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
 .admin-table-wrap {
   overflow: auto;
 }

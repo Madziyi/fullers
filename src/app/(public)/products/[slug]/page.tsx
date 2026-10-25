@@ -5,6 +5,7 @@ import { pageMetadata, jsonLd, siteUrl } from '@/lib/seo';
 import { ProductImage, ProductCard } from '@/components/product-card';
 import { Arrow } from '@/components/icons';
 import { whatsappUrl } from '@/lib/catalogue';
+import { getPublishedArticles } from '@/lib/articles';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = (await getProducts()).find((p) => p.slug === slug);
@@ -18,7 +19,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 export default async function Product({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [products, settings] = await Promise.all([getProducts(), getSettings()]);
+  const [products, settings, articles] = await Promise.all([
+    getProducts(),
+    getSettings(),
+    getPublishedArticles(),
+  ]);
   const product = products.find((p) => p.slug === slug);
   if (!product) notFound();
   const specs = Array.isArray(product.specifications)
@@ -116,6 +121,20 @@ export default async function Product({ params }: { params: Promise<{ slug: stri
               ))}
           </div>
         </section>
+        {articles.some((article) => article.productSlugs.includes(slug)) && (
+          <section className="section article-products">
+            <h2>Articles related to {product.name}</h2>
+            <ul>
+              {articles
+                .filter((article) => article.productSlugs.includes(slug))
+                .map((article) => (
+                  <li key={article.slug}>
+                    <Link href={`/blog/${article.slug}`}>{article.title}</Link>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        )}
       </div>
     </main>
   );

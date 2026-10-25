@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../../src/lib/prisma-client';
 import { hash } from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
 import { prepareScreenshot } from './capture';
-const db = new PrismaClient();
+const db = createPrismaClient();
 const marker = randomUUID();
 const customer = `m2-customer-${marker}@example.test`;
 const admin = `m2-admin-${marker}@example.test`;

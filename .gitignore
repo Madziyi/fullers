@@ -1,6 +1,7 @@
 node_modules/
 .next/
 .next-review/
+.next-*/
 .env*
 !.env.example
 playwright-report/
@@ -8,3 +9,5 @@ test-results/
 *.tsbuildinfo
 coverage/
 .local-tools/
+.local-media/
+src/generated/

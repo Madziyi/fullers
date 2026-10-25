@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../../src/lib/prisma-client';
 import { hash } from 'bcryptjs';
 import { randomUUID, createHash } from 'node:crypto';
-const db = new PrismaClient();
+const db = createPrismaClient();
 const email = `settings-qa-${randomUUID()}@example.test`;
 const password = randomUUID();
 test.afterAll(async () => {
