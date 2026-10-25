@@ -92,6 +92,9 @@ export default async function Product({ params }: { params: Promise<{ slug: stri
             <a className="button" href={whatsappUrl(settings.phone, product.name)}>
               Enquire about {product.name} <Arrow diagonal />
             </a>
+            <Link className="text-link product-form-link" href={`/contact?product=${product.slug}`}>
+              Request a quote using our form <Arrow diagonal />
+            </Link>
             <a className="detail-call" href={`tel:${settings.phone.replace(/\s/g, '')}`}>
               Prefer a call? {settings.phone}
             </a>

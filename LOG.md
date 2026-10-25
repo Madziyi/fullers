@@ -1,5 +1,11 @@
 # Decision log
 
+## M2 start
+
+- User approved the local M1 design and authorized the next sections. Scoped M2 to remaining public pages and a complete private enquiry workflow; M3 publishing remains deferred.
+- Planned signed expiring forms, consent, shared PostgreSQL throttle storage with namespaced keys, atomic writes and idempotence. No migration or external email dependency is needed.
+- Preserve the user's running preview and generated next-env changes. M2 review uses separate build output where needed; no deployment or implicit M1 merge.
+
 ## 2026-10-24
 
 - Confirmed the source folder contains only requirements and six approved WebP images, no application or Git remote.
@@ -20,3 +26,11 @@
 - Isolated E2E on port 3107 with server reuse disabled after a separate local application occupied 3000; no unrelated process was stopped.
 
 - Opened and attached https://github.com/Madziyi/fullers/pull/1 with review screenshots, validation and remaining tasks. GitHub Actions is running; no merge, deployment or next-milestone work performed.
+
+- M2 validation: 26 unit tests and real PostgreSQL concurrent retry/quota checks passed. All 16 desktop/mobile browser tests passed, covering saved enquiries, input preservation, XSS-safe rendering, admin/editor/public access and new-page accessibility. Updated screenshots and metadata; no customer fixtures remain.
+
+- Closed the mobile dropdown on page selection and Escape; added browser assertions for both. User-run preview/database processes were not stopped.
+
+- Repeated M1 settings browser tests consumed the shared local QA admin login quota. Replaced that test account with disposable per-run administrators and cleaned only the QA-consumed local throttle entry; application rate limits remain unchanged.
+
+- Final M2 regression: all 16 browser tests passed after disposable admin fixtures and mobile menu assertions. Production build, strict types, lint, 26 unit tests and PostgreSQL integration passed. Pre-existing generated next-env.d.ts dev imports are preserved and excluded from the M2 commit.

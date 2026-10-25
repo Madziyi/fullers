@@ -1,4 +1,21 @@
 import { test, expect } from '@playwright/test';
+import { PrismaClient } from '@prisma/client';
+import { hash } from 'bcryptjs';
+import { randomUUID, createHash } from 'node:crypto';
+const db = new PrismaClient();
+const email = `settings-qa-${randomUUID()}@example.test`;
+const password = randomUUID();
+test.afterAll(async () => {
+  if (process.env.CONTENT_SOURCE === 'database') {
+    const user = await db.user.findUnique({ where: { email }, select: { id: true } });
+    if (user) await db.auditLog.deleteMany({ where: { actorId: user.id } });
+    await db.user.deleteMany({ where: { email } });
+    await db.loginThrottle.deleteMany({
+      where: { key: createHash('sha256').update(email).digest('hex') },
+    });
+  }
+  await db.$disconnect();
+});
 test('database-backed sign-in and settings edit update public statistics', async ({
   page,
 }, info) => {
@@ -6,9 +23,17 @@ test('database-backed sign-in and settings edit update public statistics', async
     process.env.CONTENT_SOURCE !== 'database',
     'Requires migrated PostgreSQL and seeded administrator; covered in CI.',
   );
+  await db.user.create({
+    data: {
+      email,
+      name: 'QA administrator',
+      role: 'ADMIN',
+      passwordHash: await hash(password, 12),
+    },
+  });
   await page.goto('/admin/login');
-  await page.getByLabel('Email address').fill(process.env.ADMIN_EMAIL!);
-  await page.getByLabel('Password', { exact: true }).fill(process.env.ADMIN_PASSWORD!);
+  await page.getByLabel('Email address').fill(email);
+  await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in →' }).click();
   await expect(page).toHaveURL('/admin');
   await expect(page.getByRole('heading', { name: 'Let’s build on what’s here.' })).toBeVisible();

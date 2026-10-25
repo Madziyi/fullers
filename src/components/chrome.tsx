@@ -1,13 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Arrow } from './icons';
+import { MobileMenu } from './mobile-menu';
 import { type Settings, whatsappUrl } from '@/lib/catalogue';
 const nav = [
   { label: 'Home', href: '/' },
-  { label: 'About', href: '/#about' },
+  { label: 'About', href: '/about' },
   { label: 'Products', href: '/products' },
-  { label: 'Our capabilities', href: '/#capabilities' },
-  { label: 'Contact', href: '/#contact' },
+  { label: 'Services', href: '/services' },
+  { label: 'Contact', href: '/contact' },
 ];
 export function Header({ settings }: { settings: Settings }) {
   return (
@@ -38,23 +39,10 @@ export function Header({ settings }: { settings: Settings }) {
               </Link>
             ))}
           </nav>
-          <a className="button button-small header-quote" href={whatsappUrl(settings.phone)}>
+          <Link className="button button-small header-quote" href="/contact">
             Request a quote <Arrow diagonal />
-          </a>
-          <details className="mobile-menu">
-            <summary aria-label="Open navigation">
-              <span>Menu</span>
-              <span aria-hidden="true">☰</span>
-            </summary>
-            <nav aria-label="Mobile navigation">
-              {nav.map((item) => (
-                <Link href={item.href} key={item.label}>
-                  {item.label}
-                </Link>
-              ))}
-              <a href={whatsappUrl(settings.phone)}>Request a quote ↗</a>
-            </nav>
-          </details>
+          </Link>
+          <MobileMenu items={nav} />
         </div>
       </header>
     </>
@@ -112,10 +100,11 @@ export function Footer({ settings }: { settings: Settings }) {
         </div>
         <div>
           <h2>Explore Fullers</h2>
-          <Link href="/#about">Our company</Link>
+          <Link href="/about">Our company</Link>
           <Link href="/products">Our products</Link>
-          <Link href="/#capabilities">Our capabilities</Link>
-          <Link href="/#contact">Get in touch</Link>
+          <Link href="/services">Our capabilities</Link>
+          <Link href="/contact">Get in touch</Link>
+          <Link href="/contact/enquiry-notice">Enquiry form information</Link>
         </div>
         <div>
           <h2>Find us</h2>

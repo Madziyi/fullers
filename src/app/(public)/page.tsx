@@ -115,7 +115,7 @@ export default async function Home() {
               From homes and commercial spaces to municipal infrastructure, we bring quality
               workmanship and personal service to the materials behind your project.
             </p>
-            <a className="text-link" href="#capabilities">
+            <a className="text-link" href="/about">
               Get to know Fullers <Arrow diagonal />
             </a>
           </div>
