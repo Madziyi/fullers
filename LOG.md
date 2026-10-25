@@ -34,3 +34,5 @@
 - Repeated M1 settings browser tests consumed the shared local QA admin login quota. Replaced that test account with disposable per-run administrators and cleaned only the QA-consumed local throttle entry; application rate limits remain unchanged.
 
 - Final M2 regression: all 16 browser tests passed after disposable admin fixtures and mobile menu assertions. Production build, strict types, lint, 26 unit tests and PostgreSQL integration passed. Pre-existing generated next-env.d.ts dev imports are preserved and excluded from the M2 commit.
+
+- Opened and attached M2 PR https://github.com/Madziyi/fullers/pull/2, stacked on the reviewed M1 branch. CI repeats all checks; no merge, deployment or M3 implementation performed.

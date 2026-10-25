@@ -4,7 +4,7 @@ M2 is implemented on `feat/m2-public-pages`, based on the reviewed M1 branch. Th
 
 Delivered: source-backed About, Services and Contact pages; connected navigation, product-selected quote form, metadata/breadcrumbs/sitemap; validated private enquiry intake with consent, signed tokens, honeypot, origin checks, atomic database quotas and idempotence; administrator-only paginated inbox/detail reads.
 
-Validation: 26 unit tests, PostgreSQL integration/concurrency/constraint checks, production build, lint and strict types pass. All 16 desktop/mobile browser tests pass, including selected WCAG A/AA scans on the new pages and private enquiry detail. Review screenshots are in docs/screenshots/. The final review build and screenshots are ready for the M2 PR.
+Validation: 26 unit tests, PostgreSQL integration/concurrency/constraint checks, production build, lint and strict types pass. All 16 desktop/mobile browser tests pass, including selected WCAG A/AA scans on the new pages and private enquiry detail. Review screenshots are in docs/screenshots/. The final review build and screenshots are included in [M2 PR #2](https://github.com/Madziyi/fullers/pull/2). Hosted CI status is shown on that PR.
 
 M1 PR: https://github.com/Madziyi/fullers/pull/1. M2 is stacked on the M1 branch while that PR remains open; no merge is performed implicitly. Preserve the user's dev preview; QA uses .next-review and a separate port.
 

@@ -11,7 +11,7 @@
   - [x] Validated private enquiry intake with spam/rate/retry protection
   - [x] Administrator inbox reads and connected public navigation
   - [x] Desktop/mobile/accessibility/security checks and screenshots
-  - [ ] M2 review PR and hosted CI
+  - [x] M2 review PR opened with hosted CI configured: [#2](https://github.com/Madziyi/fullers/pull/2)
 - [ ] M3: custom CRUD, rich-text editor, SEO guidance, preview, autosave, scheduling, revisions, audit
 - [ ] M4: staging, release hardening, backups/restore, redirects review and CWV/UAT
 
