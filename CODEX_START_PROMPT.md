@@ -1,0 +1,9 @@
+# Initial instruction to Codex — Fullers Aggregate
+
+Build the Fullers Aggregate website and bespoke CMS described in `SPEC.md`, using `CONTENT_AND_ASSET_INVENTORY.md` and bundled `/assets` as source references. This is a **new greenfield project**, not a WordPress/Elementor migration codebase. Do not install WordPress, Payload, Strapi or another CMS product. A custom Next.js admin experience is required.
+
+First implement milestone M1 plus the initial complete public homepage layout (with responsive desktop and mobile designs), the shared site chrome, seven product entries and the products listing. Use actual bundled assets only when they match content and add accessible fallbacks for missing product photographs. Start products without invented measurements/prices. Preserve `30+ years`, `700+ jobs`, `100% satisfaction` and award-winning messaging as approved editorial content; make the first three editable SiteSettings fields. Keep placeholder projects/testimonials off the public website.
+
+Create and update `AGENTS.md`, `NOW.md`, `TASKS.md`, `LOG.md` during work. Keep code quality high (TypeScript strict, lint, unit/integration tests as appropriate), design polished, security strong, and public HTML crawlable from the outset. Design the CMS schema ahead of implementation; avoid expensive overengineering in milestone M1. No production deployment and no irreversible change to the old website. Provide a PR with screenshots, tests and a concise inventory of remaining tasks before continuing to the next milestone.
+
+Key experience goal: a nontechnical administrator should be able to compose a high-quality article, understand practical SEO guidance, preview its appearance, publish or schedule it, and link it to product pages without coding or WordPress plugins. Build that experience in M3; lay its foundations in M1.
