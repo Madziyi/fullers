@@ -1,10 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import sharp from 'sharp';
 import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import {
+  deleteLocalMediaFiles,
+  getOptimizedMediaPath,
+  preserveMediaOriginal,
+} from '@/lib/media-originals';
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
   const user = await currentUser();
@@ -35,6 +40,7 @@ export async function POST(request: Request) {
     );
   if (!(file instanceof File) || file.size < 1 || file.size > 5 * 1024 * 1024)
     return NextResponse.json({ error: 'Choose an image under 5 MB.' }, { status: 400 });
+  let storedId: string | null = null;
   try {
     const input = Buffer.from(await file.arrayBuffer());
     const metadata = await sharp(input, {
@@ -58,10 +64,12 @@ export async function POST(request: Request) {
       .webp({ quality: 82 })
       .toBuffer({ resolveWithObject: true });
     const id = randomUUID();
+    storedId = id;
     const directory = resolve(process.cwd(), '.local-media', 'article');
     await mkdir(directory, { recursive: true });
-    const filepath = join(directory, `${id}.webp`);
+    const filepath = getOptimizedMediaPath(id);
     await writeFile(filepath, output.data, { flag: 'wx' });
+    await preserveMediaOriginal(id, input);
     const url = `/api/article-media/${id}`;
     await db.media.create({
       data: {
@@ -82,6 +90,7 @@ export async function POST(request: Request) {
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch {
+    if (storedId) await deleteLocalMediaFiles(storedId);
     return NextResponse.json(
       { error: 'The image could not be decoded or stored.' },
       { status: 400 },

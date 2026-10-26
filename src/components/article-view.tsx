@@ -27,7 +27,15 @@ export function ArticleView({ article }: { article: ArticleSnapshot }) {
           </time>
         </p>
         {article.tagNames.length > 0 && (
-          <p className="article-tags">Topics: {article.tagNames.join(', ')}</p>
+          <p className="article-tags">
+            Topics:{' '}
+            {article.tagNames.map((tag, index) => (
+              <span key={tag}>
+                {index > 0 ? ', ' : ''}
+                <Link href={`/blog?tag=${encodeURIComponent(tag)}`}>{tag}</Link>
+              </span>
+            ))}
+          </p>
         )}
       </header>
       {article.coverSrc && (
@@ -69,6 +77,44 @@ export function ArticleView({ article }: { article: ArticleSnapshot }) {
                 </a>
               )}
             </p>
+          ) : block.type === 'code' ? (
+            <pre key={index} tabIndex={0} role="region" aria-label="Code example">
+              <code>{block.text}</code>
+            </pre>
+          ) : block.type === 'faq' ? (
+            <section key={index}>
+              <h2>{block.question}</h2>
+              <p>{block.answer}</p>
+            </section>
+          ) : block.type === 'table' ? (
+            <div
+              className="content-table-wrap"
+              key={index}
+              tabIndex={0}
+              role="region"
+              aria-label="Article table"
+            >
+              <table>
+                <thead>
+                  <tr>
+                    {block.headers.map((cell, i) => (
+                      <th scope="col" key={i}>
+                        {cell}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.rows.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <td key={j}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : block.type === 'image' ? (
             <figure key={index}>
               <Image src={block.src} alt={block.alt} width={1000} height={650} unoptimized />

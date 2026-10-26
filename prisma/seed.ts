@@ -29,8 +29,11 @@ async function main() {
       });
       imageId = media.id;
     }
-    const { image: _image, ...data } = product;
+    const { image: _image, body: _body, faqs: _faqs, seo: _seo, ...data } = product;
     void _image;
+    void _body;
+    void _faqs;
+    void _seo;
     await db.product.upsert({
       where: { slug: product.slug },
       update: {},

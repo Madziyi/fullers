@@ -5,12 +5,25 @@ import { pageMetadata } from '@/lib/seo';
 import { PageIntro } from '@/components/page-intro';
 import { ContactBand } from '@/components/chrome';
 import { Arrow, Symbol } from '@/components/icons';
-export const metadata = pageMetadata(
-  'Concrete manufacturing, supply & delivery enquiries',
-  'Discuss concrete product manufacturing, quarry material supply, bulk quantities and delivery arrangements with Fullers Aggregate in Bindura, Zimbabwe.',
-  '/services',
-);
+import { getPublishedPage, isTextSections } from '@/lib/pages-projects';
+import { StructuredPageSection } from '@/components/structured-page';
+export async function generateMetadata() {
+  const editable = await getPublishedPage('services');
+  if (editable) {
+    const seo = (editable.seo && typeof editable.seo === 'object' ? editable.seo : {}) as {
+      title?: string;
+      description?: string;
+    };
+    return pageMetadata(seo.title || editable.title, seo.description || '', '/services');
+  }
+  return pageMetadata(
+    'Concrete manufacturing, supply & delivery enquiries',
+    'Discuss concrete product manufacturing, quarry material supply, bulk quantities and delivery arrangements with Fullers Aggregate in Bindura, Zimbabwe.',
+    '/services',
+  );
+}
 export default async function Services() {
+  const editable = await getPublishedPage('services');
   const settings = await getSettings();
   return (
     <main id="main">
@@ -148,6 +161,9 @@ export default async function Services() {
           </div>
         </div>
       </section>
+      {editable && isTextSections(editable.sections) && (
+        <StructuredPageSection title={editable.title} sections={editable.sections} />
+      )}
       <ContactBand settings={settings} />
     </main>
   );

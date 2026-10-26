@@ -36,6 +36,12 @@ describe('settings write boundary', () => {
     expect(result.ok).toBe(false);
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
+  it('rejects unsafe social profile URLs before writing', async () => {
+    const form = data();
+    form.set('socialLinks', JSON.stringify([{ label: 'Profile', url: 'javascript:alert(1)' }]));
+    expect((await saveSettings({ ok: false, message: '' }, form)).ok).toBe(false);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
   it('writes settings and audit together and invalidates the public layout', async () => {
     const form = data();
     form.set('jobsValue', '701+');

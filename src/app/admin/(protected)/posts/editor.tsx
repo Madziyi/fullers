@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   cancelArticleSchedule,
+  archiveArticle,
   createArticleTaxonomy,
   publishArticle,
   saveArticle,
@@ -22,6 +23,10 @@ type Props = {
     body: ArticleBody;
     seoTitle: string;
     seoDescription: string;
+    focusQuery: string;
+    canonical: string;
+    socialTitle: string;
+    socialImage: string;
     authorName: string;
     coverSrc: string | null;
     coverAlt: string;
@@ -31,6 +36,7 @@ type Props = {
     tags: { id: string; name: string }[];
     productIds: string[];
     products: { id: string; name: string; slug: string }[];
+    articles: { title: string; slug: string; category: string | null; tags: string[] }[];
     published: boolean;
     slugLocked: boolean;
     admin: boolean;
@@ -78,7 +84,16 @@ export function ArticleEditor({ post }: Props) {
     setMessage('');
   };
   const set = (
-    key: 'title' | 'slug' | 'excerpt' | 'seoTitle' | 'seoDescription',
+    key:
+      | 'title'
+      | 'slug'
+      | 'excerpt'
+      | 'seoTitle'
+      | 'seoDescription'
+      | 'focusQuery'
+      | 'canonical'
+      | 'socialTitle'
+      | 'socialImage',
     value: string,
   ) => {
     changed();
@@ -206,15 +221,19 @@ export function ArticleEditor({ post }: Props) {
       window.removeEventListener('popstate', onPopState, true);
     };
   }, [router]);
-  function add(type: 'paragraph' | 'heading2' | 'heading3' | 'quote' | 'list' | 'link' | 'image') {
+  function add(type: ArticleBody['blocks'][number]['type']) {
     const block =
-      type === 'list'
-        ? { type, items: [''] }
-        : type === 'image'
-          ? { type, src: '/assets/quarry-stones.webp', alt: '', caption: '' }
-          : type === 'link'
-            ? { type, text: '', href: '/products' }
-            : { type, text: '' };
+      type === 'table'
+        ? { type, headers: [''], rows: [['']] }
+        : type === 'faq'
+          ? { type, question: '', answer: '' }
+          : type === 'list'
+            ? { type, items: [''] }
+            : type === 'image'
+              ? { type, src: '/assets/quarry-stones.webp', alt: '', caption: '' }
+              : type === 'link'
+                ? { type, text: '', href: '/products' }
+                : { type, text: '' };
     setBlocks((items) => [...items, block] as ArticleBody['blocks']);
     changed();
   }
@@ -567,6 +586,9 @@ export function ArticleEditor({ post }: Props) {
             <button onClick={() => add('quote')}>＋ Quote</button>
             <button onClick={() => add('link')}>＋ Link</button>
             <button onClick={() => add('image')}>＋ Image</button>
+            <button onClick={() => add('table')}>＋ Table</button>
+            <button onClick={() => add('faq')}>＋ FAQ</button>
+            <button onClick={() => add('code')}>＋ Code</button>
           </div>
           <div className="article-blocks">
             {blocks.map((block, index) => (
@@ -584,9 +606,182 @@ export function ArticleEditor({ post }: Props) {
                             ? 'List'
                             : block.type === 'link'
                               ? 'Internal or web link'
-                              : 'Image and caption'}
+                              : block.type === 'table'
+                                ? 'Table'
+                                : block.type === 'faq'
+                                  ? 'Question and answer'
+                                  : block.type === 'code'
+                                    ? 'Code'
+                                    : 'Image and caption'}
                 </strong>
-                {block.type === 'list' ? (
+                {block.type === 'table' ? (
+                  <>
+                    <div className="content-table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            {block.headers.map((cell, column) => (
+                              <th key={column}>
+                                <input
+                                  aria-label={`Column ${column + 1} heading`}
+                                  value={cell}
+                                  onChange={(e) => {
+                                    changed();
+                                    setBlocks((items) =>
+                                      items.map((item, i) =>
+                                        i === index
+                                          ? {
+                                              ...block,
+                                              headers: block.headers.map((value, j) =>
+                                                j === column ? e.target.value : value,
+                                              ),
+                                            }
+                                          : item,
+                                      ),
+                                    );
+                                  }}
+                                />
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {block.rows.map((row, rowIndex) => (
+                            <tr key={rowIndex}>
+                              {row.map((cell, column) => (
+                                <td key={column}>
+                                  <input
+                                    aria-label={`Row ${rowIndex + 1}, column ${column + 1}`}
+                                    value={cell}
+                                    onChange={(e) => {
+                                      changed();
+                                      setBlocks((items) =>
+                                        items.map((item, i) =>
+                                          i === index
+                                            ? {
+                                                ...block,
+                                                rows: block.rows.map((values, r) =>
+                                                  r === rowIndex
+                                                    ? values.map((value, c) =>
+                                                        c === column ? e.target.value : value,
+                                                      )
+                                                    : values,
+                                                ),
+                                              }
+                                            : item,
+                                        ),
+                                      );
+                                    }}
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="block-controls">
+                      <button
+                        disabled={block.headers.length >= 8}
+                        onClick={() => {
+                          changed();
+                          setBlocks((items) =>
+                            items.map((item, i) =>
+                              i === index
+                                ? {
+                                    ...block,
+                                    headers: [...block.headers, ''],
+                                    rows: block.rows.map((row) => [...row, '']),
+                                  }
+                                : item,
+                            ),
+                          );
+                        }}
+                      >
+                        Add column
+                      </button>
+                      <button
+                        disabled={block.rows.length >= 40}
+                        onClick={() => {
+                          changed();
+                          setBlocks((items) =>
+                            items.map((item, i) =>
+                              i === index
+                                ? { ...block, rows: [...block.rows, block.headers.map(() => '')] }
+                                : item,
+                            ),
+                          );
+                        }}
+                      >
+                        Add row
+                      </button>
+                      <button
+                        disabled={block.headers.length <= 1}
+                        onClick={() => {
+                          changed();
+                          setBlocks((items) =>
+                            items.map((item, i) =>
+                              i === index
+                                ? {
+                                    ...block,
+                                    headers: block.headers.slice(0, -1),
+                                    rows: block.rows.map((row) => row.slice(0, -1)),
+                                  }
+                                : item,
+                            ),
+                          );
+                        }}
+                      >
+                        Remove last column
+                      </button>
+                      <button
+                        disabled={!block.rows.length}
+                        onClick={() => {
+                          changed();
+                          setBlocks((items) =>
+                            items.map((item, i) =>
+                              i === index ? { ...block, rows: block.rows.slice(0, -1) } : item,
+                            ),
+                          );
+                        }}
+                      >
+                        Remove last row
+                      </button>
+                    </div>
+                  </>
+                ) : block.type === 'faq' ? (
+                  <>
+                    <label>
+                      Question
+                      <input
+                        value={block.question}
+                        onChange={(e) => {
+                          changed();
+                          setBlocks((items) =>
+                            items.map((item, i) =>
+                              i === index ? { ...block, question: e.target.value } : item,
+                            ),
+                          );
+                        }}
+                      />
+                    </label>
+                    <label>
+                      Answer
+                      <textarea
+                        rows={4}
+                        value={block.answer}
+                        onChange={(e) => {
+                          changed();
+                          setBlocks((items) =>
+                            items.map((item, i) =>
+                              i === index ? { ...block, answer: e.target.value } : item,
+                            ),
+                          );
+                        }}
+                      />
+                    </label>
+                  </>
+                ) : block.type === 'list' ? (
                   <textarea
                     aria-label="List items, one per line"
                     rows={Math.max(2, block.items.length)}
@@ -673,6 +868,19 @@ export function ArticleEditor({ post }: Props) {
                         );
                       }}
                     />
+                    <input
+                      aria-label="Link destination"
+                      value={block.href}
+                      onChange={(e) => {
+                        changed();
+                        setBlocks((items) =>
+                          items.map((item, i) =>
+                            i === index ? { ...block, href: e.target.value } : item,
+                          ),
+                        );
+                      }}
+                      placeholder="/products or https://…"
+                    />
                     <select
                       aria-label="Choose related published product"
                       value={block.href}
@@ -709,15 +917,45 @@ export function ArticleEditor({ post }: Props) {
                     }}
                   />
                 )}
-                <button
-                  aria-label="Remove block"
-                  onClick={() => {
-                    changed();
-                    setBlocks((items) => items.filter((_, i) => i !== index));
-                  }}
-                >
-                  Remove
-                </button>
+                <div className="block-controls">
+                  <button
+                    disabled={index === 0}
+                    aria-label="Move block up"
+                    onClick={() => {
+                      changed();
+                      setBlocks((items) => {
+                        const next = [...items];
+                        [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                        return next;
+                      });
+                    }}
+                  >
+                    Move up
+                  </button>
+                  <button
+                    disabled={index === blocks.length - 1}
+                    aria-label="Move block down"
+                    onClick={() => {
+                      changed();
+                      setBlocks((items) => {
+                        const next = [...items];
+                        [next[index + 1], next[index]] = [next[index], next[index + 1]];
+                        return next;
+                      });
+                    }}
+                  >
+                    Move down
+                  </button>
+                  <button
+                    aria-label="Remove block"
+                    onClick={() => {
+                      changed();
+                      setBlocks((items) => items.filter((_, i) => i !== index));
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -735,6 +973,14 @@ export function ArticleEditor({ post }: Props) {
         <aside className="article-sidebar">
           <section>
             <h2>Search appearance</h2>
+            <label>
+              Focus search query (optional)
+              <input
+                value={form.focusQuery}
+                onChange={(e) => set('focusQuery', e.target.value)}
+                maxLength={160}
+              />
+            </label>
             <label>
               Search title
               <input value={form.seoTitle} onChange={(e) => set('seoTitle', e.target.value)} />
@@ -756,6 +1002,39 @@ export function ArticleEditor({ post }: Props) {
                   'Add a useful description for search and sharing.'}
               </span>
             </div>
+            <details>
+              <summary>Canonical and social sharing</summary>
+              <label>
+                Canonical URL (optional)
+                <input
+                  type="url"
+                  placeholder="Defaults to this article"
+                  value={form.canonical}
+                  onChange={(e) => set('canonical', e.target.value)}
+                />
+              </label>
+              <label>
+                Social title (optional)
+                <input
+                  value={form.socialTitle}
+                  onChange={(e) => set('socialTitle', e.target.value)}
+                  maxLength={180}
+                />
+              </label>
+              <label>
+                Social image
+                <select
+                  value={form.socialImage}
+                  onChange={(e) => set('socialImage', e.target.value)}
+                >
+                  <option value="">Use cover image</option>
+                  {form.coverSrc && <option value={form.coverSrc}>Current cover</option>}
+                  <option value="/assets/quarry-stones.webp">Quarry stones</option>
+                  <option value="/assets/bricks.webp">Bricks</option>
+                  <option value="/assets/delivery-equipment.webp">Delivery equipment</option>
+                </select>
+              </label>
+            </details>
           </section>
           <section>
             <h2>Useful checks</h2>
@@ -769,8 +1048,99 @@ export function ArticleEditor({ post }: Props) {
               <li>
                 {form.seoDescription.length >= 60 ? '✓' : '○'} Search description with useful detail
               </li>
+              <li>
+                {post.articles.some(
+                  (article) => article.title.toLowerCase() === form.title.trim().toLowerCase(),
+                )
+                  ? '○ A published article has the same title; make this one distinct'
+                  : '✓ Distinct article title'}
+              </li>
+              <li>
+                {blocks.some((block) => block.type === 'image' && block.alt.trim().length < 5) ||
+                (form.coverSrc && form.coverAlt.trim().length < 5)
+                  ? '○ Add descriptive text to every informative image'
+                  : '✓ Image descriptions complete'}
+              </li>
+              <li>
+                {blocks.some(
+                  (block) =>
+                    block.type === 'link' &&
+                    block.href.startsWith('/') &&
+                    ![
+                      '/',
+                      '/about',
+                      '/products',
+                      '/services',
+                      '/contact',
+                      '/blog',
+                      ...post.products.map((p) => `/products/${p.slug}`),
+                      ...post.articles.map((a) => `/blog/${a.slug}`),
+                    ].includes(block.href.split(/[?#]/)[0]),
+                )
+                  ? '○ Check internal link targets; some are not in the published catalogue'
+                  : '✓ Internal links match known public pages'}
+              </li>
+              <li>
+                {blocks[0]?.type === 'paragraph' && blocks[0].text.trim().length >= 40 ? '✓' : '○'}{' '}
+                Begin with a useful introduction
+              </li>
+              <li>
+                {blocks.some(
+                  (block, i) =>
+                    block.type === 'heading3' &&
+                    !blocks.slice(0, i).some((before) => before.type === 'heading2'),
+                )
+                  ? '○ Add a section heading before a subheading'
+                  : '✓ Heading order is clear'}
+              </li>
             </ul>
             <p>Guidance helps readers understand the page; it does not predict search ranking.</p>
+          </section>
+          <section>
+            <h2>Suggested article links</h2>
+            <p>
+              Choose a relevant published article to add a link. Review its placement before
+              publishing.
+            </p>
+            {post.articles.length === 0 ? (
+              <p>Suggestions appear when other articles are published.</p>
+            ) : (
+              [...post.articles]
+                .sort((a, b) => {
+                  const category = categories.find((item) => item.id === form.categoryId)?.name;
+                  const selectedTags = tags
+                    .filter((item) => form.tagIds.includes(item.id))
+                    .map((item) => item.name);
+                  const score = (article: Props['post']['articles'][number]) =>
+                    Number(article.category === category) * 3 +
+                    article.tags.filter((tag) => selectedTags.includes(tag)).length * 2 +
+                    article.title
+                      .toLowerCase()
+                      .split(/\W+/)
+                      .filter(
+                        (word) =>
+                          word.length > 3 &&
+                          `${form.title} ${form.focusQuery}`.toLowerCase().includes(word),
+                      ).length;
+                  return score(b) - score(a);
+                })
+                .slice(0, 5)
+                .map((article) => (
+                  <button
+                    key={article.slug}
+                    className="suggestion-link"
+                    onClick={() => {
+                      changed();
+                      setBlocks((items) => [
+                        ...items,
+                        { type: 'link', text: article.title, href: `/blog/${article.slug}` },
+                      ]);
+                    }}
+                  >
+                    ＋ {article.title}
+                  </button>
+                ))
+            )}
           </section>
           <section>
             <h2>Related products</h2>
@@ -851,6 +1221,46 @@ export function ArticleEditor({ post }: Props) {
                   </button>
                 )}
               </div>
+            </section>
+          )}
+          {post.admin && (
+            <section>
+              <h2>Archive article</h2>
+              <p>
+                Remove this article from the website and active workspace. Scheduled publication
+                will be cancelled.
+              </p>
+              <button
+                className="button button-small button-outline"
+                disabled={actionBusy}
+                onClick={async () => {
+                  if (
+                    !window.confirm('Archive this article and remove it from the public website?')
+                  )
+                    return;
+                  if (actionLock.current) return;
+                  actionLock.current = true;
+                  setActionBusy(true);
+                  try {
+                    const savedVersion = await save();
+                    if (savedVersion === null) return;
+                    const result = await archiveArticle(post.id, savedVersion);
+                    if (result.ok) {
+                      router.push('/admin/posts');
+                      router.refresh();
+                      return;
+                    }
+                    setMessage(result.error);
+                  } catch {
+                    setMessage('Could not archive. Check your connection and retry.');
+                  } finally {
+                    actionLock.current = false;
+                    setActionBusy(false);
+                  }
+                }}
+              >
+                Archive article
+              </button>
             </section>
           )}
         </aside>

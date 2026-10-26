@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Arrow } from './icons';
 import { MobileMenu } from './mobile-menu';
 import { type Settings, whatsappUrl } from '@/lib/catalogue';
+import { settingsSchema } from '@/lib/validation';
 const nav = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
@@ -10,10 +11,25 @@ const nav = [
   { label: 'Services', href: '/services' },
   { label: 'Contact', href: '/contact' },
 ];
-export function Header({ settings, showBlog = false }: { settings: Settings; showBlog?: boolean }) {
-  const items = showBlog
+export function Header({
+  settings,
+  showBlog = false,
+  showProjects = false,
+}: {
+  settings: Settings;
+  showBlog?: boolean;
+  showProjects?: boolean;
+}) {
+  const contentItems = showBlog
     ? [...nav.slice(0, 4), { label: 'Blog', href: '/blog' }, ...nav.slice(4)]
     : nav;
+  const items = showProjects
+    ? [
+        ...contentItems.slice(0, 4),
+        { label: 'Projects', href: '/projects' },
+        ...contentItems.slice(4),
+      ]
+    : contentItems;
   return (
     <>
       <div className="utility">
@@ -81,6 +97,7 @@ export function ContactBand({ settings }: { settings: Settings }) {
   );
 }
 export function Footer({ settings }: { settings: Settings }) {
+  const socialLinks = settingsSchema.shape.socialLinks.safeParse(settings.socialLinks);
   return (
     <footer>
       <div className="container footer-grid">
@@ -108,6 +125,12 @@ export function Footer({ settings }: { settings: Settings }) {
           <Link href="/services">Our capabilities</Link>
           <Link href="/contact">Get in touch</Link>
           <Link href="/contact/enquiry-notice">Enquiry form information</Link>
+          {socialLinks.success &&
+            socialLinks.data?.map((link) => (
+              <a href={link.url} key={link.url} rel="noopener noreferrer" target="_blank">
+                {link.label} ↗
+              </a>
+            ))}
         </div>
         <div>
           <h2>Find us</h2>

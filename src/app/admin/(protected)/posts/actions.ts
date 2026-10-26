@@ -64,6 +64,22 @@ const saveInput = z.object({
   body: articleBodySchema,
   seoTitle: z.string().max(180),
   seoDescription: z.string().max(320),
+  focusQuery: z.string().max(160).default(''),
+  canonical: z
+    .union([
+      z.literal(''),
+      z
+        .string()
+        .url()
+        .refine((value) => /^https?:\/\//.test(value)),
+    ])
+    .default(''),
+  socialTitle: z.string().max(180).default(''),
+  socialImage: z
+    .string()
+    .max(300)
+    .refine((value) => !value || safeImageSrc(value))
+    .default(''),
   authorName: z.string().max(120),
   coverSrc: z
     .string()
@@ -117,6 +133,7 @@ export async function saveArticle(rawInput: unknown) {
         block.type === 'image' && block.src.startsWith('/api/article-media/') ? [block.src] : [],
       ),
       ...(input.coverSrc?.startsWith('/api/article-media/') ? [input.coverSrc] : []),
+      ...(input.socialImage.startsWith('/api/article-media/') ? [input.socialImage] : []),
     ]),
   ];
   if (imageUrls.length) {
@@ -163,6 +180,10 @@ export async function saveArticle(rawInput: unknown) {
           seo: {
             title: input.seoTitle.trim(),
             description: input.seoDescription.trim(),
+            focusQuery: input.focusQuery.trim(),
+            canonical: input.canonical,
+            socialTitle: input.socialTitle.trim(),
+            socialImage: input.socialImage || null,
             authorName: input.authorName.trim(),
             coverSrc: input.coverSrc,
             coverAlt: input.coverAlt,
@@ -336,6 +357,44 @@ const scheduleInput = z.object({
   version: z.number().int().positive(),
   localDateTime: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
 });
+
+export async function archiveArticle(id: string, version: number) {
+  const actor = await requireAdmin();
+  if (!z.string().cuid().safeParse(id).success || !Number.isSafeInteger(version) || version < 1)
+    return { ok: false as const, error: 'Reload this article and retry.' };
+  try {
+    await db.$transaction(async (tx) => {
+      await tx.publicationJob.updateMany({
+        where: { postId: id, status: { in: ['PENDING', 'RETRY'] } },
+        data: { status: 'CANCELLED', finishedAt: new Date(), lastError: 'Article archived.' },
+      });
+      const updated = await tx.post.updateMany({
+        where: { id, version, deletedAt: null },
+        data: {
+          status: 'ARCHIVED',
+          deletedAt: new Date(),
+          publishedRevisionId: null,
+          publishedAt: null,
+          publishAt: null,
+          version: { increment: 1 },
+        },
+      });
+      if (!updated.count) throw new Error('CONFLICT');
+      await tx.auditLog.create({
+        data: { actorId: actor.id, action: 'ARCHIVE', entity: 'Post', entityId: id },
+      });
+    });
+  } catch {
+    return {
+      ok: false as const,
+      error: 'The article changed or could not be archived. Reload and retry.',
+    };
+  }
+  revalidatePath('/', 'layout');
+  revalidatePath('/admin/posts');
+  revalidatePath('/sitemap.xml');
+  return { ok: true as const };
+}
 
 export async function scheduleArticle(rawInput: unknown) {
   const actor = await requireAdmin();

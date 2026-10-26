@@ -25,9 +25,11 @@ test.afterAll(async () => {
       });
       await db.media.deleteMany({ where: { articlePostId: articleId } });
       await Promise.all(
-        media.map((item) =>
-          unlink(resolve(process.cwd(), '.local-media', 'article', `${item.id}.webp`)).catch(
-            () => undefined,
+        media.flatMap((item) =>
+          ['webp', 'original'].map((extension) =>
+            unlink(
+              resolve(process.cwd(), '.local-media', 'article', `${item.id}.${extension}`),
+            ).catch(() => undefined),
           ),
         ),
       );
@@ -101,6 +103,19 @@ test('publication snapshots remain stable until an edited version is published',
   ).toBeVisible();
   await page.getByRole('button', { name: '＋ Link' }).click();
   await page.getByLabel('Link text').fill('Explore Fullers products');
+  await page.getByRole('button', { name: '＋ Table', exact: true }).click();
+  await page.getByLabel('Column 1 heading', { exact: true }).fill('Enquiry detail');
+  await page.getByLabel('Row 1, column 1', { exact: true }).fill('Confirm with the Fullers team');
+  await page.getByRole('button', { name: 'Add column', exact: true }).click();
+  await page.getByLabel('Column 2 heading', { exact: true }).fill('Next step');
+  await page.getByLabel('Row 1, column 2', { exact: true }).fill('Discuss requirements');
+  await page.getByRole('button', { name: '＋ FAQ', exact: true }).click();
+  await page.getByLabel('Question', { exact: true }).fill('How can I discuss my requirements?');
+  await page
+    .getByLabel('Answer', { exact: true })
+    .fill('Contact Fullers with your project requirements.');
+  await page.getByRole('button', { name: '＋ Code', exact: true }).click();
+  await page.getByLabel('code', { exact: true }).fill('<script>This is displayed as text</script>');
   const apiUrl = new URL('/api/article-media', page.url()).href;
   const fakeUpload = await page.request.post(apiUrl, {
     headers: { origin: new URL(page.url()).origin },
@@ -162,6 +177,10 @@ test('publication snapshots remain stable until an edited version is published',
   const first = await request.get(`/blog/${slug}`);
   expect(first.status()).toBe(200);
   expect(await first.text()).toContain('The first published explanation');
+  const firstHtml = await first.text();
+  expect(firstHtml).toContain('<th scope="col">Enquiry detail</th>');
+  expect(firstHtml).toContain('How can I discuss my requirements?');
+  expect(firstHtml).toContain('&lt;script&gt;This is displayed as text&lt;/script&gt;');
   expect((await request.get(ownedMedia.storageKey)).status()).toBe(200);
   const firstRevision = await db.post.findUniqueOrThrow({
     where: { id: articleId! },

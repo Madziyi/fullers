@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { articleBodySchema } from '@/lib/articles';
+import { articleBodySchema, getPublishedArticles } from '@/lib/articles';
 import { ArticleEditor } from '../editor';
 import { publicWhere } from '@/lib/catalogue';
 export const dynamic = 'force-dynamic';
@@ -30,6 +30,10 @@ export default async function EditArticle({ params }: { params: Promise<{ id: st
     authorName?: string;
     coverSrc?: string | null;
     coverAlt?: string;
+    focusQuery?: string;
+    canonical?: string;
+    socialTitle?: string;
+    socialImage?: string;
   } | null;
   return (
     <ArticleEditor
@@ -42,6 +46,10 @@ export default async function EditArticle({ params }: { params: Promise<{ id: st
         body: body.success ? body.data : { type: 'doc', blocks: [] },
         seoTitle: seo?.title ?? '',
         seoDescription: seo?.description ?? '',
+        focusQuery: seo?.focusQuery ?? '',
+        canonical: seo?.canonical ?? '',
+        socialTitle: seo?.socialTitle ?? '',
+        socialImage: seo?.socialImage ?? '',
         authorName: seo?.authorName ?? post.author.name,
         coverSrc: seo?.coverSrc ?? null,
         coverAlt: seo?.coverAlt ?? '',
@@ -54,6 +62,14 @@ export default async function EditArticle({ params }: { params: Promise<{ id: st
         tags: await db.tag.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
         productIds: post.products.map((product) => product.id),
         products: availableProducts,
+        articles: (await getPublishedArticles())
+          .filter((article) => article.slug !== post.publishedSlug)
+          .map((article) => ({
+            title: article.title,
+            slug: article.slug,
+            category: article.categoryName,
+            tags: article.tagNames,
+          })),
         published: post.publishedRevisionId !== null,
         slugLocked: post.publishedSlug !== null,
         defaultScheduleLocal: '',

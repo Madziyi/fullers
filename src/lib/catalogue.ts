@@ -14,8 +14,9 @@ export const initialSettings = {
   seoDescription:
     'Fullers Aggregate manufactures and supplies concrete products and quarry stones in Bindura, Zimbabwe. Explore our range and discuss your project.',
 };
-export type Settings = typeof initialSettings;
+export type Settings = typeof initialSettings & { socialLinks?: unknown };
 export type CatalogueProduct = {
+  id?: string;
   slug: string;
   name: string;
   summary: string;
@@ -24,6 +25,12 @@ export type CatalogueProduct = {
   applications: string[];
   specifications: unknown;
   featured: boolean;
+  body?: unknown;
+  faqs?: unknown;
+  seo?: unknown;
+  focalX?: number;
+  focalY?: number;
+  relatedIds?: string[];
 };
 export const initialProducts: CatalogueProduct[] = [
   {

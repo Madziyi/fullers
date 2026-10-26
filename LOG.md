@@ -71,3 +71,23 @@ Parent review completed after Luna high implementation. Published the feature br
 - Closed a manual-publish/worker race by rechecking the current published pointer after schedule locking; cancellation now reports a version conflict clearly.
 - Verification passed: strict TypeScript, ESLint, 51 unit tests, PostgreSQL seed/constraint and worker integration tests, isolated production build, and all 20 desktop/mobile Playwright tests. Browser coverage verifies Harare scheduling, pre-publication privacy and conflict invalidation. Added `docs/M3B_QA.md` and desktop/mobile schedule screenshots. Isolated browser/build output used port 3117; the user's preview on 3107 was preserved.
 - No revision browser/restore UI, production deployment, hosting scheduler or old-website changes were made. Opened and attached [M3B PR #4](https://github.com/Madziyi/fullers/pull/4), stacked on M3A; both GitHub Actions runs passed. No PR was merged.
+
+## October 25, 2026 — remaining M3 authorized
+
+The user authorized completion of all remaining M3 slices, with Luna high agents as needed, followed by admin/CMS UI cleanup. Added docs/M3_COMPLETION_PLAN.md. Work covers catalogue/media, pages/projects, administrator operations and remaining article formats; no deployment is authorized. Existing preview and generated next-env.d.ts are preserved.
+
+## October 25, 2026 — M3C/M3D completion and content studio polish
+
+Completed remaining M3 implementation with three Luna high agents: catalogue/media, pages/projects and administrator operations. Integrated the modules, reviewed authorization/publication boundaries and corrected stale-save timestamps, UUID media validation, user account payloads, unknown legacy redirect routing and concurrent access edits. Added semantic table/FAQ/code article formats, ordering, canonical/social fields, published-article suggestions and taxonomy browsing. Refreshed the shared dashboard, responsive navigation, forms, media cards and focus states.
+
+Product/media/page/project management is administrator-only. Page/project saves return entries to private draft explicitly; publication and approval use saved-version checks. Uploaded image replacement keeps referenced original files, media archive checks references atomically, and public media requires a published article/product or approved project. Enquiry operation audits omit personal content; user creation hashes passwords and last-admin/self-change guards remain server-side.
+
+Initial browser checks led to corrections for mobile scroll-region keyboard access, duplicate project status output and asynchronous/ambiguous test assertions. Final evidence is tracked in docs/M3_COMPLETION_QA.md. Revision restore UI remains excluded. Production scheduler/storage/providers and release checks remain M4 inputs. The user preview was preserved; no merge, deployment or old-site change.
+
+Final local browser verification completed: 23 checks passed in the full run; the five desktop checks that exceeded older local deadlines all passed against the same production build with the adjusted deadlines. All 14 mobile checks passed, including original image preservation/private download. No functional failures remain. Lint, strict types, 76 unit tests, database/worker checks, production build and development login checks are recorded in the QA report. Two orphaned disposable editor fixtures from an initial test timing race were removed; content fixture counts returned to zero posts/projects/pages and seven approved products.
+
+The completion branch is committed locally. Public pushing was rejected by automatic approval review even after the existing repository identity, public visibility, permissions and shared M3B base were verified; explicit approval for public source export is required. No alternate export path was used and no completion PR/hosted CI result is claimed.
+
+## October 26, 2026 — M3 review publication approved
+
+The user explicitly approved pushing codex/m3-cms-completion to the public Madziyi/fullers repository and opening its review PR. Pushed the verified implementation and responsive evidence, then opened PR #5 stacked on feat/m3b-publishing-reliability and attached it to this chat. Hosted CI is pending. Generated-only next-env.d.ts remains uncommitted. No merge, deployment or old-site change.

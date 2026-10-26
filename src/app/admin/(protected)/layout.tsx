@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { SignOut } from './sign-out';
+import { AdminNav } from './nav';
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
   return (
@@ -9,22 +10,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         <Link href="/admin" className="admin-wordmark">
           Fullers<span>CONTENT STUDIO</span>
         </Link>
-        <nav aria-label="Administration">
-          <Link href="/admin">Overview</Link>
-          <Link href="/admin/products">Products</Link>
-          {user.role === 'ADMIN' && <Link href="/admin/settings">Site settings</Link>}
-          {user.role === 'ADMIN' && <Link href="/admin/enquiries">Enquiries</Link>}
-          <Link href="/admin/posts">Articles</Link>
-          <span>
-            Projects <small>M3</small>
-          </span>
-          <span>
-            Media library <small>M3</small>
-          </span>
-          <span>
-            Pages <small>M3</small>
-          </span>
-        </nav>
+        <AdminNav admin={user.role === 'ADMIN'} />
         <Link href="/">↗ View public website</Link>
       </aside>
       <div className="admin-main">

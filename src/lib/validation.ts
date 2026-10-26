@@ -20,5 +20,18 @@ export const settingsSchema = z.object({
   awardClaim: shortText,
   seoTitle: z.string().trim().min(5).max(100),
   seoDescription: z.string().trim().min(20).max(300),
+  socialLinks: z
+    .array(
+      z.object({
+        label: z.string().trim().min(1).max(60),
+        url: z
+          .string()
+          .url()
+          .max(500)
+          .refine((value) => value.startsWith('https://')),
+      }),
+    )
+    .max(8)
+    .optional(),
 });
 export type SettingsInput = z.infer<typeof settingsSchema>;
