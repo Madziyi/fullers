@@ -14,4 +14,4 @@ M1/M2/M3A review gates were complete; prior review PRs remain separate: #1 found
 
 M4 release inputs remain: hosting/storage and dependable scheduler configuration (including PUBLISH_WORKER_SECRET); notification provider if desired; approved privacy/retention text; original photo rights and missing product photos; verified product specifications, service regions and award details; original WhatsApp-link verification; staging, backup/restore exercise, monitoring, CWV and final UAT. No production scheduler is configured, so scheduled jobs require the protected worker to be invoked by a dependable trigger before release.
 
-Review packaging: implementation is committed locally. Automatic approval review rejected the branch push to the existing GitHub remote pending explicit approval for the external export. No completion PR or hosted CI result is claimed yet.
+Review packaging: the user explicitly approved public source export on October 26, 2026. The branch is pushed and [PR #5](https://github.com/Madziyi/fullers/pull/5) is open, stacked on M3B. Hosted CI is pending; no merge or deployment was performed.

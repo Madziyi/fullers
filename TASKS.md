@@ -24,4 +24,4 @@ Email notifications and retention/deletion automation await provider/policy deci
 
 QA uses isolated output and ports. Preserve the user's preview and keep generated-only next-env.d.ts edits out of commits. Evidence and exact validation commands are in docs/M3_COMPLETION_QA.md.
 
-- [ ] Approval required: export the local review branch to the public Madziyi/fullers repository and open the completion PR. Automatic approval review rejected the push pending explicit user approval; no hosted CI is claimed.
+- [x] User approved public branch export on October 26; pushed and opened [PR #5](https://github.com/Madziyi/fullers/pull/5). Hosted CI is pending; no merge or deployment.

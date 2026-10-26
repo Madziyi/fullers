@@ -87,3 +87,7 @@ Initial browser checks led to corrections for mobile scroll-region keyboard acce
 Final local browser verification completed: 23 checks passed in the full run; the five desktop checks that exceeded older local deadlines all passed against the same production build with the adjusted deadlines. All 14 mobile checks passed, including original image preservation/private download. No functional failures remain. Lint, strict types, 76 unit tests, database/worker checks, production build and development login checks are recorded in the QA report. Two orphaned disposable editor fixtures from an initial test timing race were removed; content fixture counts returned to zero posts/projects/pages and seven approved products.
 
 The completion branch is committed locally. Public pushing was rejected by automatic approval review even after the existing repository identity, public visibility, permissions and shared M3B base were verified; explicit approval for public source export is required. No alternate export path was used and no completion PR/hosted CI result is claimed.
+
+## October 26, 2026 — M3 review publication approved
+
+The user explicitly approved pushing codex/m3-cms-completion to the public Madziyi/fullers repository and opening its review PR. Pushed the verified implementation and responsive evidence, then opened PR #5 stacked on feat/m3b-publishing-reliability and attached it to this chat. Hosted CI is pending. Generated-only next-env.d.ts remains uncommitted. No merge, deployment or old-site change.
