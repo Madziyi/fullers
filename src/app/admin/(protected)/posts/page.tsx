@@ -40,7 +40,7 @@ export default async function ArticlesPage() {
           <button className="button">New article +</button>
         </form>
       </div>
-      <div className="admin-table-wrap">
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Content table">
         <table className="admin-table">
           <thead>
             <tr>

@@ -15,7 +15,13 @@ export async function saveSettings(
       message:
         'This preview uses read-only seed content. Switch to database content to save settings.',
     };
-  const parsed = settingsSchema.safeParse(Object.fromEntries(form.entries()));
+  let socialLinks: unknown;
+  try {
+    socialLinks = form.has('socialLinks') ? JSON.parse(String(form.get('socialLinks'))) : undefined;
+  } catch {
+    return { ok: false, message: 'Check the social links and retry.' };
+  }
+  const parsed = settingsSchema.safeParse({ ...Object.fromEntries(form.entries()), socialLinks });
   if (!parsed.success)
     return {
       ok: false,

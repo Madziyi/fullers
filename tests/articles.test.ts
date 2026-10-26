@@ -2,6 +2,38 @@ import { describe, expect, it } from 'vitest';
 import { articleBodySchema, articleSnapshotSchema } from '@/lib/articles';
 
 describe('structured article content', () => {
+  it('supports bounded tables, FAQ and escaped code as structured text', () => {
+    expect(
+      articleBodySchema.safeParse({
+        type: 'doc',
+        blocks: [
+          {
+            type: 'table',
+            headers: ['Question', 'Details'],
+            rows: [['Availability', 'Enquire with Fullers']],
+          },
+          {
+            type: 'faq',
+            question: 'How do I enquire?',
+            answer: 'Contact the team with your requirements.',
+          },
+          { type: 'code', text: '<script>alert(1)</script>' },
+        ],
+      }).success,
+    ).toBe(true);
+    expect(
+      articleBodySchema.safeParse({
+        type: 'doc',
+        blocks: [{ type: 'table', headers: ['One'], rows: [['Two', 'Cells']] }],
+      }).success,
+    ).toBe(false);
+    expect(
+      articleBodySchema.safeParse({
+        type: 'doc',
+        blocks: [{ type: 'table', headers: Array(9).fill('Column'), rows: [] }],
+      }).success,
+    ).toBe(false);
+  });
   it('accepts supported semantic blocks and approved media references', () => {
     const result = articleBodySchema.safeParse({
       type: 'doc',
@@ -56,9 +88,28 @@ describe('structured article content', () => {
     ).toBe(false);
   });
 
-  it('rejects publication snapshots without useful image text and complete metadata',()=>{
-    const snapshot={title:'Choosing products for a building project',slug:'choosing-products',excerpt:'A useful introduction to choosing concrete products for a project.',authorName:'Fullers Aggregate',categoryName:null,tagNames:[],body:{type:'doc',blocks:[{type:'image',src:'/assets/bricks.webp',alt:'',caption:''}]},coverSrc:null,coverAlt:'',seoTitle:'Choosing products',seoDescription:'A description for people planning a building project in Bindura.',productSlugs:[],publishedAt:new Date().toISOString()};
+  it('rejects publication snapshots without useful image text and complete metadata', () => {
+    const snapshot = {
+      title: 'Choosing products for a building project',
+      slug: 'choosing-products',
+      excerpt: 'A useful introduction to choosing concrete products for a project.',
+      authorName: 'Fullers Aggregate',
+      categoryName: null,
+      tagNames: [],
+      body: {
+        type: 'doc',
+        blocks: [{ type: 'image', src: '/assets/bricks.webp', alt: '', caption: '' }],
+      },
+      coverSrc: null,
+      coverAlt: '',
+      seoTitle: 'Choosing products',
+      seoDescription: 'A description for people planning a building project in Bindura.',
+      productSlugs: [],
+      publishedAt: new Date().toISOString(),
+    };
     expect(articleSnapshotSchema.safeParse(snapshot).success).toBe(false);
-    expect(articleSnapshotSchema.safeParse({...snapshot,body:{type:'doc',blocks:[]}}).success).toBe(true);
+    expect(
+      articleSnapshotSchema.safeParse({ ...snapshot, body: { type: 'doc', blocks: [] } }).success,
+    ).toBe(true);
   });
 });

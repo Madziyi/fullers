@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { ArticleView } from '@/components/article-view';
-import { getPublishedArticle } from '@/lib/articles';
+import { getPublishedArticle, getPublishedArticles } from '@/lib/articles';
+import Link from 'next/link';
 import { pageMetadata, jsonLd, siteUrl } from '@/lib/seo';
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -12,30 +13,45 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       article.seoTitle,
       article.seoDescription,
       `/blog/${slug}`,
-      article.coverSrc ?? undefined,
+      article.socialImage ?? article.coverSrc ?? undefined,
     ),
     openGraph: {
-      title: article.seoTitle,
+      title: article.socialTitle || article.seoTitle,
       description: article.seoDescription,
       url: `/blog/${slug}`,
       siteName: 'Fullers Aggregate',
       locale: 'en_ZW',
       type: 'article',
       publishedTime: article.publishedAt,
-      images: article.coverSrc ? [{ url: article.coverSrc, alt: article.coverAlt }] : undefined,
+      images:
+        article.socialImage || article.coverSrc
+          ? [{ url: (article.socialImage || article.coverSrc)!, alt: article.coverAlt }]
+          : undefined,
     },
     twitter: {
       card: 'summary_large_image',
-      title: article.seoTitle,
+      title: article.socialTitle || article.seoTitle,
       description: article.seoDescription,
-      images: article.coverSrc ? [article.coverSrc] : undefined,
+      images:
+        article.socialImage || article.coverSrc
+          ? [(article.socialImage || article.coverSrc)!]
+          : undefined,
     },
+    alternates: { canonical: article.canonical || `/blog/${slug}` },
   };
 }
 export default async function BlogArticle({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = await getPublishedArticle(slug);
   if (!article) notFound();
+  const related = (await getPublishedArticles())
+    .filter(
+      (item) =>
+        item.slug !== article.slug &&
+        ((item.categoryName && item.categoryName === article.categoryName) ||
+          item.tagNames.some((tag) => article.tagNames.includes(tag))),
+    )
+    .slice(0, 3);
   return (
     <main id="main">
       <script
@@ -73,6 +89,21 @@ export default async function BlogArticle({ params }: { params: Promise<{ slug: 
         }}
       />
       <ArticleView article={article} />
+      {related.length > 0 && (
+        <section className="container related-reading">
+          <h2>Related reading</h2>
+          <div className="blog-grid">
+            {related.map((item) => (
+              <article key={item.slug}>
+                <h3>
+                  <Link href={`/blog/${item.slug}`}>{item.title}</Link>
+                </h3>
+                <p>{item.excerpt}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

@@ -33,7 +33,7 @@ export default async function Enquiries({
         <h2>Enquiry inbox</h2>
         {enquiries.length ? (
           <>
-            <div className="admin-table-wrap">
+            <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Content table">
               <table className="admin-table">
                 <thead>
                   <tr>

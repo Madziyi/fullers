@@ -7,15 +7,27 @@ import { Arrow, Symbol } from '@/components/icons';
 import { ProductCard } from '@/components/product-card';
 import { ContactBand } from '@/components/chrome';
 import { getPublishedArticles } from '@/lib/articles';
+import { getPublishedPage, getPublishedProjects, isTextSections } from '@/lib/pages-projects';
+import { StructuredPageSection } from '@/components/structured-page';
 export async function generateMetadata() {
+  const editable = await getPublishedPage('home');
+  if (editable) {
+    const seo = (editable.seo && typeof editable.seo === 'object' ? editable.seo : {}) as {
+      title?: string;
+      description?: string;
+    };
+    return pageMetadata(seo.title || editable.title, seo.description || '', '/');
+  }
   const s = await getSettings();
   return pageMetadata(s.seoTitle, s.seoDescription, '/');
 }
 export default async function Home() {
-  const [settings, products, articles] = await Promise.all([
+  const editable = await getPublishedPage('home');
+  const [settings, products, articles, projects] = await Promise.all([
     getSettings(),
     getProducts(),
     getPublishedArticles(),
+    getPublishedProjects(),
   ]);
   return (
     <main id="main">
@@ -120,9 +132,9 @@ export default async function Home() {
               From homes and commercial spaces to municipal infrastructure, we bring quality
               workmanship and personal service to the materials behind your project.
             </p>
-            <a className="text-link" href="/about">
+            <Link className="text-link" href="/about">
               Get to know Fullers <Arrow diagonal />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -263,6 +275,31 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      {projects.length > 0 && (
+        <section className="section home-blog">
+          <div className="container">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">FULLERS AT WORK</p>
+                <h2>Built with Fullers.</h2>
+              </div>
+              <Link className="text-link" href="/projects">
+                All projects <Arrow diagonal />
+              </Link>
+            </div>
+            <div className="blog-grid">
+              {projects.slice(0, 3).map((project) => (
+                <article key={project.id}>
+                  <p className="eyebrow">{project.location || 'FULLERS AGGREGATE'}</p>
+                  <h3>
+                    <Link href={`/projects/${project.slug}`}>{project.title}</Link>
+                  </h3>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       {articles.length > 0 && (
         <section className="section home-blog">
           <div className="container">
@@ -288,6 +325,9 @@ export default async function Home() {
             </div>
           </div>
         </section>
+      )}
+      {editable && isTextSections(editable.sections) && (
+        <StructuredPageSection title={editable.title} sections={editable.sections} />
       )}
       <ContactBand settings={settings} />
     </main>

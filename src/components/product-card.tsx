@@ -17,6 +17,9 @@ export function ProductImage({
       sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
       className="product-photo"
       priority={priority}
+      style={{
+        objectPosition: `${(product.focalX ?? 0.5) * 100}% ${(product.focalY ?? 0.5) * 100}%`,
+      }}
     />
   ) : (
     <div

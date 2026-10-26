@@ -46,6 +46,9 @@ export function buildPublicationSnapshot(post: PublicationPost, publishedAt: Dat
     authorName?: string;
     coverSrc?: string | null;
     coverAlt?: string;
+    canonical?: string;
+    socialTitle?: string;
+    socialImage?: string | null;
   } | null;
   const result = articleSnapshotSchema.safeParse({
     title: post.title,
@@ -61,6 +64,9 @@ export function buildPublicationSnapshot(post: PublicationPost, publishedAt: Dat
     seoDescription: seo?.description || post.excerpt,
     productSlugs: post.products.map((product) => product.slug),
     publishedAt: publishedAt.toISOString(),
+    canonical: seo?.canonical || undefined,
+    socialTitle: seo?.socialTitle || undefined,
+    socialImage: seo?.socialImage || null,
   });
   if (!result.success)
     return {

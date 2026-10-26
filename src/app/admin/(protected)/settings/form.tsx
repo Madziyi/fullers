@@ -1,10 +1,11 @@
 'use client';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { saveSettings } from './actions';
 import type { SettingsInput } from '@/lib/validation';
 export function SettingsForm({ settings }: { settings: SettingsInput }) {
   const [result, action, pending] = useActionState(saveSettings, { ok: false, message: '' });
-  function field(name: keyof SettingsInput, label: string, maxLength = 80) {
+  const [links, setLinks] = useState(settings.socialLinks ?? []);
+  function field(name: Exclude<keyof SettingsInput, 'socialLinks'>, label: string, maxLength = 80) {
     return (
       <div className="field">
         <label htmlFor={name}>{label}</label>
@@ -19,6 +20,64 @@ export function SettingsForm({ settings }: { settings: SettingsInput }) {
         {field('companyName', 'Company name', 120)}
         {field('phone', 'Phone / WhatsApp', 25)}
         {field('location', 'Location', 250)}
+      </fieldset>
+      <fieldset>
+        <legend>Social links</legend>
+        <p className="admin-notice">
+          Add only verified Fullers profiles. These appear in the public footer.
+        </p>
+        <input type="hidden" name="socialLinks" value={JSON.stringify(links)} />
+        {links.map((link, index) => (
+          <div className="social-link-row" key={index}>
+            <label>
+              Profile name
+              <input
+                aria-label={`Social profile ${index + 1} name`}
+                value={link.label}
+                required
+                maxLength={60}
+                onChange={(e) =>
+                  setLinks((items) =>
+                    items.map((item, i) =>
+                      i === index ? { ...item, label: e.target.value } : item,
+                    ),
+                  )
+                }
+              />
+            </label>
+            <label>
+              Profile URL
+              <input
+                aria-label={`Social profile ${index + 1} URL`}
+                type="url"
+                value={link.url}
+                required
+                maxLength={500}
+                placeholder="https://…"
+                onChange={(e) =>
+                  setLinks((items) =>
+                    items.map((item, i) => (i === index ? { ...item, url: e.target.value } : item)),
+                  )
+                }
+              />
+            </label>
+            <button
+              type="button"
+              className="button button-small button-outline"
+              onClick={() => setLinks((items) => items.filter((_, i) => i !== index))}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="button button-small button-outline"
+          disabled={links.length >= 8}
+          onClick={() => setLinks((items) => [...items, { label: '', url: '' }])}
+        >
+          Add social profile
+        </button>
       </fieldset>
       <fieldset>
         <legend>Approved proof points</legend>

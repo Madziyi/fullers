@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { SettingsForm } from './form';
+import { settingsSchema } from '@/lib/validation';
 export default async function SettingsPage() {
   await requireAdmin();
   const settings = await db.siteSettings.findUniqueOrThrow({ where: { id: 'site' } });
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
           changes.
         </p>
       )}
-      <SettingsForm settings={settings} />
+      <SettingsForm settings={settingsSchema.parse(settings)} />
     </>
   );
 }

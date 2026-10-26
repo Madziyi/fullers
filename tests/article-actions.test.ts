@@ -18,6 +18,7 @@ vi.mock('@/lib/auth', () => ({ requireUser: mockRequireUser, requireAdmin: mockR
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 import {
   publishArticle,
+  archiveArticle,
   scheduleArticle,
   cancelArticleSchedule,
   saveArticle,
@@ -52,6 +53,7 @@ describe('article action authorization and conflict boundaries', () => {
   it('denies editor calls to publish and unpublish even when directly invoked', async () => {
     await expect(publishArticle('c123456789012345678901234', 4)).rejects.toThrow('Administrator');
     await expect(unpublishArticle('c123456789012345678901234')).rejects.toThrow('Administrator');
+    await expect(archiveArticle('c123456789012345678901234', 4)).rejects.toThrow('Administrator');
     await expect(
       scheduleArticle({
         id: 'c123456789012345678901234',

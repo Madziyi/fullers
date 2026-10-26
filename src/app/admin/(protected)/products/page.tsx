@@ -1,7 +1,9 @@
-import { requireUser } from '@/lib/auth';
+import Link from 'next/link';
+import { requireAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { createProduct } from './actions';
 export default async function ProductsAdmin() {
-  await requireUser();
+  await requireAdmin();
   const products = await db.product.findMany({
     where: { deletedAt: null },
     include: { image: true },
@@ -12,7 +14,10 @@ export default async function ProductsAdmin() {
       <div className="admin-title">
         <p className="eyebrow">CONTENT / PRODUCTS</p>
         <h1>Your product catalogue.</h1>
-        <p>Review the seven original product entries. Full product editing arrives in M3.</p>
+        <p>Edit structured product content and choose what appears publicly.</p>
+        <form action={createProduct}>
+          <button className="button">New product +</button>
+        </form>
       </div>
       <div className="admin-panel admin-table-wrap">
         <table className="admin-table">
@@ -28,7 +33,11 @@ export default async function ProductsAdmin() {
           <tbody>
             {products.map((p) => (
               <tr key={p.id}>
-                <th scope="row">{p.name}</th>
+                <th scope="row">
+                  <Link className="text-link" href={`/admin/products/${p.id}`}>
+                    {p.name}
+                  </Link>
+                </th>
                 <td>
                   <span className="badge">{p.status.toLowerCase()}</span>
                 </td>

@@ -10,9 +10,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = (await getProducts()).find((p) => p.slug === slug);
   if (!product) return { title: 'Product not found', robots: { index: false } };
+  const seo = product.seo as { title?: string; description?: string } | null;
   return pageMetadata(
-    `${product.name} in Bindura`,
-    product.summary,
+    seo?.title || `${product.name} in Bindura`,
+    seo?.description || product.summary,
     `/products/${product.slug}`,
     product.image ?? undefined,
   );
@@ -33,6 +34,22 @@ export default async function Product({ params }: { params: Promise<{ slug: stri
           s !== null &&
           typeof s.label === 'string' &&
           typeof s.value === 'string',
+      )
+    : [];
+  const paragraphs = Array.isArray((product.body as { paragraphs?: unknown[] } | null)?.paragraphs)
+    ? (product.body as { paragraphs: unknown[] }).paragraphs.filter(
+        (p): p is string => typeof p === 'string' && p.trim().length > 0,
+      )
+    : [];
+  const faqs = Array.isArray(product.faqs)
+    ? product.faqs.filter(
+        (faq): faq is { question: string; answer: string } =>
+          typeof faq === 'object' &&
+          faq !== null &&
+          'question' in faq &&
+          'answer' in faq &&
+          typeof faq.question === 'string' &&
+          typeof faq.answer === 'string',
       )
     : [];
   return (
@@ -72,6 +89,9 @@ export default async function Product({ params }: { params: Promise<{ slug: stri
             <p className="eyebrow">THE FULLERS RANGE / {product.applications.join(', ')}</p>
             <h1>{product.name}</h1>
             <p className="lead">{product.summary}</p>
+            {paragraphs.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
             <div className="spec-note">
               <h2>Let’s find the right fit.</h2>
               {specs.length ? (
@@ -105,22 +125,37 @@ export default async function Product({ params }: { params: Promise<{ slug: stri
             </a>
           </div>
         </section>
-        <section className="section">
-          <div className="section-heading">
-            <h2>Keep building your list.</h2>
-            <Link href="/products" className="text-link">
-              All products <Arrow />
-            </Link>
-          </div>
-          <div className="product-grid related-grid">
-            {products
-              .filter((p) => p.slug !== slug)
-              .slice(0, 3)
-              .map((p, i) => (
-                <ProductCard product={p} index={i} key={p.slug} />
+        {faqs.length > 0 && (
+          <section className="section">
+            <h2>Questions about {product.name}</h2>
+            <dl>
+              {faqs.map((faq) => (
+                <div key={faq.question}>
+                  <dt>{faq.question}</dt>
+                  <dd>{faq.answer}</dd>
+                </div>
               ))}
-          </div>
-        </section>
+            </dl>
+          </section>
+        )}
+        {product.relatedIds?.length ? (
+          <section className="section">
+            <div className="section-heading">
+              <h2>Keep building your list.</h2>
+              <Link href="/products" className="text-link">
+                All products <Arrow />
+              </Link>
+            </div>
+            <div className="product-grid related-grid">
+              {products
+                .filter((p) => p.slug !== slug && product.relatedIds?.includes(p.id ?? ''))
+                .slice(0, 3)
+                .map((p, i) => (
+                  <ProductCard product={p} index={i} key={p.slug} />
+                ))}
+            </div>
+          </section>
+        ) : null}
         {articles.some((article) => article.productSlugs.includes(slug)) && (
           <section className="section article-products">
             <h2>Articles related to {product.name}</h2>

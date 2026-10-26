@@ -5,12 +5,25 @@ import { pageMetadata } from '@/lib/seo';
 import { PageIntro } from '@/components/page-intro';
 import { ContactBand } from '@/components/chrome';
 import { Arrow, Symbol } from '@/components/icons';
-export const metadata = pageMetadata(
-  'About Fullers Aggregate',
-  'Meet Fullers Aggregate, an award-winning concrete products manufacturer rooted in Bindura, Zimbabwe. Quality workmanship, personal service and practical supply conversations.',
-  '/about',
-);
+import { getPublishedPage, isTextSections } from '@/lib/pages-projects';
+import { StructuredPageSection } from '@/components/structured-page';
+export async function generateMetadata() {
+  const editable = await getPublishedPage('about');
+  if (editable) {
+    const seo = (editable.seo && typeof editable.seo === 'object' ? editable.seo : {}) as {
+      title?: string;
+      description?: string;
+    };
+    return pageMetadata(seo.title || editable.title, seo.description || '', '/about');
+  }
+  return pageMetadata(
+    'About Fullers Aggregate',
+    'Meet Fullers Aggregate, an award-winning concrete products manufacturer rooted in Bindura, Zimbabwe. Quality workmanship, personal service and practical supply conversations.',
+    '/about',
+  );
+}
 export default async function About() {
+  const editable = await getPublishedPage('about');
   const settings = await getSettings();
   return (
     <main id="main">
@@ -139,6 +152,9 @@ export default async function About() {
           </Link>
         </div>
       </section>
+      {editable && isTextSections(editable.sections) && (
+        <StructuredPageSection title={editable.title} sections={editable.sections} />
+      )}
       <ContactBand settings={settings} />
     </main>
   );

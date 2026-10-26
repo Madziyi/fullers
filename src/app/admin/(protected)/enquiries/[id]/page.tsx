@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { updateEnquiryStatus } from '../actions';
 export default async function EnquiryDetail({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   if (user.role !== 'ADMIN') notFound();
@@ -49,10 +50,19 @@ export default async function EnquiryDetail({ params }: { params: Promise<{ id: 
         </dl>
         <h2>Project message</h2>
         <p className="enquiry-message">{enquiry.message}</p>
-        <p>
-          Reply using the contact details above. Status changes and further inbox management arrive
-          in M3.
-        </p>
+        <form action={updateEnquiryStatus} className="admin-form">
+          <input type="hidden" name="id" value={enquiry.id} />
+          <label htmlFor="status">Enquiry status</label>
+          <select id="status" name="status" defaultValue={enquiry.status}>
+            <option value="NEW">New</option>
+            <option value="IN_PROGRESS">In progress</option>
+            <option value="CLOSED">Closed</option>
+            <option value="SPAM">Spam</option>
+          </select>
+          <button className="button button-primary" type="submit">
+            Save status
+          </button>
+        </form>
         <Link className="text-link" href="/admin/enquiries">
           ← Back to enquiries
         </Link>

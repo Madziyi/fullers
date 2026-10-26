@@ -7,6 +7,22 @@ const paragraph = z.object({ type: z.literal('paragraph'), text: z.string().max(
 const heading = z.object({ type: z.enum(['heading2', 'heading3']), text: z.string().max(300) });
 const quote = z.object({ type: z.literal('quote'), text: z.string().max(2000) });
 const list = z.object({ type: z.literal('list'), items: z.array(z.string().max(500)).max(30) });
+const code = z.object({ type: z.literal('code'), text: z.string().max(10000) });
+const faq = z.object({
+  type: z.literal('faq'),
+  question: z.string().max(300),
+  answer: z.string().max(3000),
+});
+const table = z
+  .object({
+    type: z.literal('table'),
+    headers: z.array(z.string().max(300)).min(1).max(8),
+    rows: z.array(z.array(z.string().max(1000)).min(1).max(8)).max(40),
+  })
+  .refine(
+    (value) => value.rows.every((row) => row.length === value.headers.length),
+    'Each row must match the column headings.',
+  );
 const safeHref = (value: string) =>
   /^\/(?![\\/])[a-zA-Z0-9._~!$&'()*+,;=:@%/-]*(?:[?#][a-zA-Z0-9._~!$&'()*+,;=:@%/?-]*)?$/.test(
     value,
@@ -43,7 +59,19 @@ const image = z.object({
 export const articleBodySchema = z.object({
   type: z.literal('doc'),
   blocks: z
-    .array(z.discriminatedUnion('type', [paragraph, heading, quote, list, link, image]))
+    .array(
+      z.discriminatedUnion('type', [
+        paragraph,
+        heading,
+        quote,
+        list,
+        link,
+        image,
+        code,
+        faq,
+        table,
+      ]),
+    )
     .max(200),
 });
 const publishedBodySchema = articleBodySchema.superRefine((doc, ctx) =>
@@ -59,6 +87,18 @@ const publishedBodySchema = articleBodySchema.superRefine((doc, ctx) =>
         code: 'custom',
         path: ['blocks', index, 'text'],
         message: 'Links need descriptive text.',
+      });
+    if (block.type === 'faq' && (!block.question.trim() || !block.answer.trim()))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['blocks', index],
+        message: 'Complete the question and answer.',
+      });
+    if (block.type === 'table' && block.headers.some((value) => !value.trim()))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['blocks', index],
+        message: 'Each table column needs a heading.',
       });
   }),
 );
@@ -77,6 +117,9 @@ export type ArticleSnapshot = {
   seoDescription: string;
   productSlugs: string[];
   publishedAt: string;
+  canonical?: string;
+  socialTitle?: string;
+  socialImage?: string | null;
 };
 export const articleSnapshotSchema = z.object({
   title: z.string().min(5).max(160),
@@ -95,6 +138,13 @@ export const articleSnapshotSchema = z.object({
   seoDescription: z.string().min(1).max(320),
   productSlugs: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)).max(20),
   publishedAt: z.string().datetime(),
+  canonical: z
+    .string()
+    .url()
+    .refine((value) => /^https?:\/\//.test(value))
+    .optional(),
+  socialTitle: z.string().max(180).optional(),
+  socialImage: z.string().max(300).refine(safeImageSrc).nullable().optional(),
 });
 
 export async function getPublishedArticles() {

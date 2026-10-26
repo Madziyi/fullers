@@ -36,7 +36,7 @@ test('database-backed sign-in and settings edit update public statistics', async
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in →' }).click();
   await expect(page).toHaveURL('/admin');
-  await expect(page.getByRole('heading', { name: 'Let’s build on what’s here.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your publishing workspace.' })).toBeVisible();
   await page.screenshot({
     path: `docs/screenshots/admin-${info.project.name}.png`,
     fullPage: true,
