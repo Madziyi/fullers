@@ -110,6 +110,7 @@ test('administrator edits and publishes a product, manages media metadata, and a
   await expect(page.getByRole('status')).toContainText('Saved');
   await page.evaluate(() => {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    document.documentElement.style.scrollBehavior = 'auto';
     window.scrollTo(0, 0);
   });
   await page.screenshot({

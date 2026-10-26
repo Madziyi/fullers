@@ -5,7 +5,7 @@ The user authorized all remaining M3 work and final admin/CMS UI cleanup on Octo
 ## Delivered
 
 - Product CRUD, related products, source-backed structured details, specifications/FAQ row editors, SEO, explicit publication, optimistic conflict checks, private preview and archive.
-- Administrator media library: bounded decoded JPEG/PNG/WebP upload, WebP output, source/alt/dimensions, focal/crop preview, metadata audit and reference-aware archive. Replacement uploads a new asset and changes the content selection; referenced original bytes remain intact.
+- Administrator media library: bounded decoded JPEG/PNG/WebP upload, private originals and optimized WebP output, source/alt/dimensions, focal/crop preview, metadata audit and reference-aware archive. Replacement uploads a new asset and changes the content selection; referenced original bytes remain intact.
 - Controlled 1–20 page sections, inline validation, private preview and publication conflict checks. Home/About/Services retain approved source content and show supplemental published sections. Custom pages use `/pages/[slug]`.
 - Real-project editor with date, photos, products, client-name permission, private preview and explicit approval. Saves return projects to private draft; public reads require publication plus approval. Photos need descriptive alt before approval.
 - Administrator enquiry statuses, safe same-site redirect CRUD/chain/cycle checks and resolution for legacy paths, user creation/access controls and paginated audit history. No enquiry content/account contact details in operation audit payloads.
@@ -19,11 +19,11 @@ The user authorized all remaining M3 work and final admin/CMS UI cleanup on Octo
 - PostgreSQL integration: seed/public visibility, rollback/unique-slug/publication constraints and worker/concurrency suite passed (3 integration tests). Local sandbox initially denied the QA localhost connection; the authorized local elevated run passed.
 - Final isolated production build: passed with all CMS/public routes and legacy fallback.
 - Development login: 2/2 passed on port 3119, including POST-only/no-JavaScript safety and development CSP hydration.
-- Final desktop/mobile browser suite: in progress; update this line with final result.
+- Final desktop/mobile browser verification: all 28 checks passed across the final run and targeted rerun. The complete run passed 23; five desktop checks exceeded the old five-second/45-second deadlines under local resource contention, then all five passed against the identical build with 15-second assertions/90-second test deadlines. All 14 mobile checks passed, including original-image byte preservation and guest rejection.
 
 The initial browser pass found and prompted fixes for upload UUID validation, form-test timing/selector issues, and keyboard focus on mobile code/table scroll regions. Final results below must refer to the corrected build.
 
-Screenshots: `docs/screenshots/m3-studio-{admin,products,media}-{desktop,mobile}.png`; article and schedule screenshots also refreshed by the browser suite. Desktop/mobile dashboard images were visually reviewed.
+Screenshots: `docs/screenshots/m3-studio-{admin,products,media}-{desktop,mobile}.png`; `m3-product-editor-*` and `m3-project-editor-*` show the editing forms; article and schedule screenshots were also refreshed by the browser suite. Desktop/mobile dashboard and product-editor images were visually reviewed. Original-source downloads are administrator-only; browser coverage compares source bytes and rejects guests.
 
 ## Reproduce isolated QA
 
@@ -46,3 +46,5 @@ Use only the disposable local/CI database. These tests create temporary records 
 ## Release limits
 
 No production scheduler, hosting, durable storage or notification service was configured. The protected publication worker still requires a dependable hosting trigger and secret before automatic scheduling operates in production. Local uploads use ignored `.local-media`; choose persistent storage/backups before release. Business approvals/technical specifications, photo rights/missing photos, privacy/retention, MFA/recovery, edge throttling, monitoring, backup restore, CWV and final UAT remain M4/release inputs. Automated accessibility checks do not replace keyboard/screen-reader UAT.
+
+Review publishing: automatic approval review rejected the push to https://github.com/Madziyi/fullers.git because it requires explicit approval for exporting this branch. The implementation and review package remain committed locally; no PR or hosted CI is claimed for this completion branch.

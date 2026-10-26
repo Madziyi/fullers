@@ -12,7 +12,7 @@
 - [x] M3D: user/role administration and audit browser; no default passwords or audit PII
 - [x] M3: table/FAQ/code formats, block reordering, social/canonical fields and approved link suggestions
 - [x] M3: final admin/CMS navigation, dashboard, form/table and responsive UI cleanup
-- [ ] M3: final consolidated production browser verification and review packaging (in progress; see docs/M3_COMPLETION_QA.md)
+- [x] M3: production browser verification and local review package (see docs/M3_COMPLETION_QA.md)
 - [ ] Release configuration: production scheduler/worker secret and durable media storage before deployment
 - [ ] M4: staging, release hardening, backups/restore, verified redirect map, CWV and final UAT
 
@@ -23,3 +23,5 @@ Revision restore/history UI is excluded by the user's decision. No production de
 Email notifications and retention/deletion automation await provider/policy decisions. Product sizes/specifications, three product photos, imagery rights/attribution, delivery regions, award details, privacy text and enquiry recipient remain Fullers inputs. No invented business claims, projects, testimonials, prices or stock imagery are published.
 
 QA uses isolated output and ports. Preserve the user's preview and keep generated-only next-env.d.ts edits out of commits. Evidence and exact validation commands are in docs/M3_COMPLETION_QA.md.
+
+- [ ] Approval required: export the local review branch to the public Madziyi/fullers repository and open the completion PR. Automatic approval review rejected the push pending explicit user approval; no hosted CI is claimed.

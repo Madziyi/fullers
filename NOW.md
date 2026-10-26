@@ -13,3 +13,5 @@ Verification and screenshots: docs/M3_COMPLETION_QA.md. Production QA uses ignor
 M1/M2/M3A review gates were complete; prior review PRs remain separate: #1 foundation, #2 public pages, #3 articles, #4 scheduled publishing. Do not merge them implicitly.
 
 M4 release inputs remain: hosting/storage and dependable scheduler configuration (including PUBLISH_WORKER_SECRET); notification provider if desired; approved privacy/retention text; original photo rights and missing product photos; verified product specifications, service regions and award details; original WhatsApp-link verification; staging, backup/restore exercise, monitoring, CWV and final UAT. No production scheduler is configured, so scheduled jobs require the protected worker to be invoked by a dependable trigger before release.
+
+Review packaging: implementation is committed locally. Automatic approval review rejected the branch push to the existing GitHub remote pending explicit approval for the external export. No completion PR or hosted CI result is claimed yet.

@@ -93,6 +93,7 @@ test('pages publish structured content and projects require approval and return 
   await expect(page.getByRole('status')).toContainText('Project approved and published');
   await page.evaluate(() => {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    document.documentElement.style.scrollBehavior = 'auto';
     window.scrollTo(0, 0);
   });
   await page.screenshot({
