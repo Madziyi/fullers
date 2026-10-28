@@ -91,3 +91,11 @@ The completion branch is committed locally. Public pushing was rejected by autom
 ## October 26, 2026 — M3 review publication approved
 
 The user explicitly approved pushing codex/m3-cms-completion to the public Madziyi/fullers repository and opening its review PR. Pushed the verified implementation and responsive evidence, then opened PR #5 stacked on feat/m3b-publishing-reliability and attached it to this chat. Hosted CI is pending. Generated-only next-env.d.ts remains uncommitted. No merge, deployment or old-site change.
+
+## October 27, 2026 - Supabase staging configuration
+
+User selected a dedicated Free project, then authorized Fullers objects within caption-assist after the two-active-Free-project limit blocked creation. Created private fullers schema from three existing migrations, registered Prisma baselines, enabled RLS/browser denial, created a generated-password runtime login with scoped CRUD, seeded seven approved products/settings/four bundled media records and created private fullers-media bucket. Caption Assist tables/policies/settings were preserved; room/participant counts stayed 53/110.
+
+Added schema-aware Prisma/raw-query configuration and fail-closed private Supabase Storage adapter, preserving local development. Credentials are only in ignored .env.supabase-staging; original .env/preview preserved. Verified TLS, Prisma catalogue reads and denied cross-app reads. Lint/typecheck, 81 unit tests, production build and desktop/mobile CMS tests passed. Browser CMS used Supabase PostgreSQL with local storage pending the key; initial local-database QA was stopped because that database was offline. All disposable records/files cleaned up.
+
+Management connector recovered after transient errors. Schema CREATE revoked after baselining. Automatic review rejected optional history-ownership transfer requiring temporary role membership; no workaround executed. History remains private, RLS enabled and runtime-owned. Existing security warnings and informational FK/index advisories recorded without changing Caption Assist policies. Real remote Storage verification awaits modern server key; initial admin, hosted scheduler, upload hosting limits and release/UAT remain pending. No upgrade, deployment, DNS or old-site change. See docs/SUPABASE_STAGING.md.

@@ -1,5 +1,4 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { readMediaFile } from '@/lib/media-storage';
 import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
@@ -80,8 +79,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (!published && !publicProduct && !publicProject && !privateAllowed)
     return new Response(null, { status: 404 });
   try {
-    const data = await readFile(resolve(process.cwd(), '.local-media', 'article', `${id}.webp`));
-    return new NextResponse(data, {
+    const data = await readMediaFile(id, 'webp');
+    return new NextResponse(new Uint8Array(data), {
       headers: {
         'Content-Type': 'image/webp',
         'X-Content-Type-Options': 'nosniff',

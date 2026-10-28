@@ -1,15 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import sharp from 'sharp';
+import { deleteMediaFiles, writeMediaFile } from '@/lib/media-storage';
 import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import {
-  deleteLocalMediaFiles,
-  getOptimizedMediaPath,
-  preserveMediaOriginal,
-} from '@/lib/media-originals';
+import { preserveMediaOriginal } from '@/lib/media-originals';
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
   const user = await currentUser();
@@ -65,10 +60,7 @@ export async function POST(request: Request) {
       .toBuffer({ resolveWithObject: true });
     const id = randomUUID();
     storedId = id;
-    const directory = resolve(process.cwd(), '.local-media', 'article');
-    await mkdir(directory, { recursive: true });
-    const filepath = getOptimizedMediaPath(id);
-    await writeFile(filepath, output.data, { flag: 'wx' });
+    await writeMediaFile(id, 'webp', output.data);
     await preserveMediaOriginal(id, input);
     const url = `/api/article-media/${id}`;
     await db.media.create({
@@ -90,7 +82,7 @@ export async function POST(request: Request) {
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch {
-    if (storedId) await deleteLocalMediaFiles(storedId);
+    if (storedId) await deleteMediaFiles(storedId).catch(() => undefined);
     return NextResponse.json(
       { error: 'The image could not be decoded or stored.' },
       { status: 400 },

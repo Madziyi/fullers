@@ -1,5 +1,7 @@
 # Current work
 
+October 27: user authorized Supabase configuration and reuse of caption-assist. Private fullers schema, restricted database login, seven approved products and private media bucket are configured. Prisma/TLS and production/browser CMS checks passed. See docs/SUPABASE_STAGING.md. Ignored .env.supabase-staging needs SUPABASE_SECRET_KEY for real Storage verification. Initial admin, scheduler and deployment remain pending; original .env and user preview are preserved.
+
 M3 custom CMS completion is implemented on `codex/m3-cms-completion`, stacked on `feat/m3b-publishing-reliability` (PR #4). The user authorized the remaining M3 slices and a final admin/CMS UI cleanup on October 25, 2026. No deployment, merge or old-site change is authorized or performed.
 
 Delivered M3C/M3D: administrator product CRUD with structured specifications/FAQs, related products, SEO, private preview and explicit publication; media upload/library with provenance, alt text, focal preview and safe replacement; controlled page sections and private previews; real-project approval/publication, product/photo associations and public pages; enquiry statuses; safe redirect CRUD and legacy URL resolution; user/role controls and audit browsing. Conflicting saves fail visibly. Page/project saves return published entries to private draft; the UI states this behavior. Home/About/Services preserve original approved content and render published supplemental sections.

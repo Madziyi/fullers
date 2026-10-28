@@ -1,10 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import sharp from 'sharp';
+import { readMediaFile } from '@/lib/media-storage';
 import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { getOriginalMediaPath, hasOriginalForStorage, isMediaUuid } from '@/lib/media-originals';
+import { hasOriginalForStorage, isMediaUuid } from '@/lib/media-originals';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,11 +32,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return new Response(null, { status: 404 });
   try {
     const localUpload = /^\/api\/article-media\/([0-9a-f-]{36})$/.exec(media.storageKey);
-    const filepath =
+    const data =
       localUpload && isMediaUuid(localUpload[1])
-        ? getOriginalMediaPath(localUpload[1])
-        : resolve(process.cwd(), 'public', `.${media.storageKey}`);
-    const data = await readFile(filepath);
+        ? await readMediaFile(localUpload[1], 'original')
+        : await readFile(resolve(process.cwd(), 'public', `.${media.storageKey}`));
     if (data.byteLength < 1 || data.byteLength > 5 * 1024 * 1024)
       return new Response(null, { status: 404 });
     const metadata = await sharp(data, {
@@ -51,7 +51,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       metadata.height > 8000
     )
       return new Response(null, { status: 404 });
-    return new NextResponse(data, {
+    return new NextResponse(new Uint8Array(data), {
       headers: {
         'Content-Type': format.mime,
         'Content-Disposition': `attachment; filename="fullers-original-${media.id}.${format.extension}"`,

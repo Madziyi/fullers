@@ -25,3 +25,14 @@ Email notifications and retention/deletion automation await provider/policy deci
 QA uses isolated output and ports. Preserve the user's preview and keep generated-only next-env.d.ts edits out of commits. Evidence and exact validation commands are in docs/M3_COMPLETION_QA.md.
 
 - [x] User approved public branch export on October 26; pushed and opened [PR #5](https://github.com/Madziyi/fullers/pull/5). Hosted CI is pending; no merge or deployment.
+
+## Supabase staging - October 27, 2026
+
+- [x] Isolated Fullers schema, restricted database login, approved catalogue and private bucket in caption-assist.
+- [x] Apply/baseline migrations, RLS/browser denial, schema-aware Prisma and private storage adapter.
+- [x] Verify TLS/Prisma isolation, production build, lint/types, 81 unit tests and desktop/mobile CMS workflows.
+- [ ] Supply server Storage key in ignored staging env and verify actual remote objects.
+- [ ] Provision explicit initial administrator, deployed scheduler, backups/restore and release UAT.
+- [ ] Approved owner-management transfer of Prisma history; runtime ownership retained after automatic review rejected temporary role membership.
+
+See docs/SUPABASE_STAGING.md for exact checks and hosting prerequisites.
