@@ -5,6 +5,7 @@ import { getPublishedArticles } from '@/lib/articles';
 import { getPublishedPages, getPublishedProjects } from '@/lib/pages-projects';
 export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (process.env.SITE_INDEXING_ENABLED === 'false') return [];
   const products = await getProducts();
   const articles = await getPublishedArticles();
   const pages = await getPublishedPages();

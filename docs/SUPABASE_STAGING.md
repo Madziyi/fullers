@@ -47,7 +47,7 @@ The app accepts 5 MiB images; Vercel Functions limits request/response bodies to
 
 Prisma history remains owned by fullers_runtime, which created it during baselining. Automatic approval review rejected a proposed transfer requiring temporary role membership. No workaround was executed. History remains private with RLS, and runtime schema CREATE was independently revoked. A future ownership transfer needs an approved owner-management path.
 
-Explicit initial admin, scheduler, backups/restore and release UAT remain pending. No deployment, live DNS change, old-site modification or paid upgrade occurred.
+Initial admin was subsequently provisioned from explicit user-supplied credentials and production login verified. Scheduler, backups/restore and release UAT remain pending; manual hosting steps are in docs/STAGING_RELEASE.md. No deployment, live DNS change, old-site modification or paid upgrade occurred.
 
 References: [Prisma](https://supabase.com/docs/guides/database/prisma), [Storage security](https://supabase.com/docs/guides/storage/security/access-control), [server keys](https://supabase.com/docs/guides/getting-started/api-keys), [verified TLS](https://supabase.com/docs/guides/platform/ssl-enforcement).
 

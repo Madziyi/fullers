@@ -1,6 +1,6 @@
 # Current work
 
-October 27: user authorized Supabase configuration and reuse of caption-assist. Private fullers schema, restricted database login, seven approved products and private media bucket are configured. Prisma/TLS and production/browser CMS checks passed. See docs/SUPABASE_STAGING.md. The user supplied the key in ignored .env.supabase-staging; real private Storage upload/read/delete, byte preservation, public denial and both desktop/mobile CMS workflows passed. Initial admin, scheduler and deployment remain pending; original .env and user preview are preserved.
+October 27: user authorized Supabase configuration and reuse of caption-assist. Private fullers schema, restricted database login, seven approved products and private media bucket are configured. Prisma/TLS and production/browser CMS checks passed. See docs/SUPABASE_STAGING.md. The user supplied the key in ignored .env.supabase-staging; real private Storage upload/read/delete, byte preservation, public denial and both desktop/mobile CMS workflows passed. Initial admin is provisioned and production login verified; scheduler and deployment remain pending; original .env and user preview are preserved.
 
 M3 custom CMS completion is implemented on `codex/m3-cms-completion`, stacked on `feat/m3b-publishing-reliability` (PR #4). The user authorized the remaining M3 slices and a final admin/CMS UI cleanup on October 25, 2026. No deployment, merge or old-site change is authorized or performed.
 
@@ -17,3 +17,5 @@ M1/M2/M3A review gates were complete; prior review PRs remain separate: #1 found
 M4 release inputs remain: hosting/storage and dependable scheduler configuration (including PUBLISH_WORKER_SECRET); notification provider if desired; approved privacy/retention text; original photo rights and missing product photos; verified product specifications, service regions and award details; original WhatsApp-link verification; staging, backup/restore exercise, monitoring, CWV and final UAT. No production scheduler is configured, so scheduled jobs require the protected worker to be invoked by a dependable trigger before release.
 
 Review packaging: the user explicitly approved public source export on October 26, 2026. The branch is pushed and [PR #5](https://github.com/Madziyi/fullers/pull/5) is open, stacked on M3B. Hosted CI is pending; no merge or deployment was performed.
+
+Manual hosting handoff requested: docs/STAGING_RELEASE.md. Staging indexing controls implemented/verified. User requested instructions for both Hostinger and Vercel; no deployment performed. Original 5 MiB uploads retained, so Vercel still needs a payload-limit adaptation.

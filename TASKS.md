@@ -32,7 +32,9 @@ QA uses isolated output and ports. Preserve the user's preview and keep generate
 - [x] Apply/baseline migrations, RLS/browser denial, schema-aware Prisma and private storage adapter.
 - [x] Verify TLS/Prisma isolation, production build, lint/types, 81 unit tests and desktop/mobile CMS workflows.
 - [x] Server Storage key saved in ignored staging env; actual remote objects and both desktop/mobile CMS workflows verified with cleanup.
-- [ ] Provision explicit initial administrator, deployed scheduler, backups/restore and release UAT.
+- [x] Provision explicit initial administrator and verify production login.
+- [x] Staging noindex/robots/empty-sitemap controls and authenticated worker smoke check.
+- [ ] Manual hosting deployment, active scheduler, backups/restore and release UAT (docs/STAGING_RELEASE.md).
 - [ ] Approved owner-management transfer of Prisma history; runtime ownership retained after automatic review rejected temporary role membership.
 
 See docs/SUPABASE_STAGING.md for exact checks and hosting prerequisites.
