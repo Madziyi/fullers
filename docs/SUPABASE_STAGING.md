@@ -19,9 +19,9 @@ The direct IPv6 PostgreSQL connection was verified with TLS chain and hostname c
 
 The Prisma adapter sets both its schema and PostgreSQL search_path, covering ORM and raw SQL. Existing local environments default to public.
 
-**Pending user input:** save an existing modern sb_secret_ server key from Caption Assist Settings / API Keys in SUPABASE_SECRET_KEY in `.env.supabase-staging`. The connector cannot retrieve secret keys. Keep it out of chat, Git and NEXT_PUBLIC_ variables. This shared project's server key has project-wide authority; retain it exclusively on the trusted server.
+**Server key configured:** the user saved a modern server key in SUPABASE_SECRET_KEY in ignored `.env.supabase-staging`. Actual private Storage operations were verified. Keep the key out of chat, Git and NEXT_PUBLIC_ variables. This shared project's server key has project-wide authority; retain it exclusively on the trusted server.
 
-Staging selects the Supabase provider and uploads fail closed until the key exists. Custom CMS authentication remains; Supabase Auth is not required. Initial administrator provisioning requires explicitly supplied credentials through the existing seed command.
+Staging selects the Supabase provider; missing/invalid credentials fail closed. Custom CMS authentication remains; Supabase Auth is not required. Initial administrator provisioning requires explicitly supplied credentials through the existing seed command.
 
 ## Media and hosting
 
@@ -29,7 +29,7 @@ Explicit local/Supabase storage providers are implemented. Vercel refuses local 
 
 Before switching an existing environment containing uploads, copy both variants and verify bytes/reference counts. The new remote seed only references bundled photos.
 
-Actual remote object upload/read/delete verification awaits the server key. Browser tests below used Supabase PostgreSQL with LOCAL media storage; they do not prove remote object storage works.
+Actual remote object uploads, authenticated reads, original-byte equality, duplicate-write rejection, public/unauthenticated denial and exact-object deletion passed. Desktop/mobile CMS workflows subsequently passed against both Supabase PostgreSQL and real private Storage. Final cleanup confirmed zero bucket objects, seven approved products, four bundled media records and zero users.
 
 No deployed hostname exists, so no Cron job is active. Configure authenticated POST to /api/internal/publish-due only after hosting is ready, keeping its secret in Vault. Verify exact-version conflicts and idempotence.
 
@@ -37,9 +37,9 @@ The app accepts 5 MiB images; Vercel Functions limits request/response bodies to
 
 ## Verification
 
-- Lint, strict typecheck, 81 unit tests across 14 files and production build passed. Five tests cover private Storage adapter contracts.
+- Lint, strict typecheck, 82 unit tests across 14 files and production build passed. Six tests cover private Storage adapter contracts.
 - Production preview against Supabase passed home, catalogue, product detail, blog and login checks; guest upload returned 401.
-- Existing desktop/mobile product/media workflows passed 2/2 against Supabase with local storage. Disposable users/content/files were removed.
+- Existing desktop/mobile product/media workflows passed 2/2 against Supabase PostgreSQL and private Storage in 51.8 seconds. Disposable records and remote objects were removed. Earlier local-storage checks also passed.
 - Real Prisma queries verified seven products, current_schema()=fullers and denied cross-app reads. All three Prisma baselines exist, all 21 tables use RLS, no Fullers table is browser-readable, and runtime schema CREATE is revoked.
 - Initial sandbox build directory failure and interim TypeScript errors were corrected before the successful build. Initial browser testing against the original local database was stopped because that database was offline.
 - Security advisors: intentional no-policy RLS on migration history, plus pre-existing Caption Assist anonymous-policy/password-protection warnings. Existing policies were preserved. [RLS advisory](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [anonymous policy advisory](https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0012_auth_allow_anonymous_sign_ins).
@@ -47,6 +47,10 @@ The app accepts 5 MiB images; Vercel Functions limits request/response bodies to
 
 Prisma history remains owned by fullers_runtime, which created it during baselining. Automatic approval review rejected a proposed transfer requiring temporary role membership. No workaround was executed. History remains private with RLS, and runtime schema CREATE was independently revoked. A future ownership transfer needs an approved owner-management path.
 
-Remote Storage verification, explicit initial admin, scheduler, backups/restore and release UAT remain pending. No deployment, live DNS change, old-site modification or paid upgrade occurred.
+Explicit initial admin, scheduler, backups/restore and release UAT remain pending. No deployment, live DNS change, old-site modification or paid upgrade occurred.
 
 References: [Prisma](https://supabase.com/docs/guides/database/prisma), [Storage security](https://supabase.com/docs/guides/storage/security/access-control), [server keys](https://supabase.com/docs/guides/getting-started/api-keys), [verified TLS](https://supabase.com/docs/guides/platform/ssl-enforcement).
+
+## Storage verification follow-up
+
+The user supplied the server key on October 27. Real testing found that Supabase returns HTTP 400 with a NoSuchKey/statusCode 404 body for missing object info, including after successful deletion. Switched the existence lookup from HEAD to GET and recognize only that exact missing-object code; permission/service errors remain failures. Added a regression test. Production build, lint/types, all 82 unit tests, the direct live Storage test and both desktop/mobile CMS workflows passed. Test cleanup now removes only its generated remote object keys when the Supabase provider is selected.

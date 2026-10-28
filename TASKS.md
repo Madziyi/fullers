@@ -31,7 +31,7 @@ QA uses isolated output and ports. Preserve the user's preview and keep generate
 - [x] Isolated Fullers schema, restricted database login, approved catalogue and private bucket in caption-assist.
 - [x] Apply/baseline migrations, RLS/browser denial, schema-aware Prisma and private storage adapter.
 - [x] Verify TLS/Prisma isolation, production build, lint/types, 81 unit tests and desktop/mobile CMS workflows.
-- [ ] Supply server Storage key in ignored staging env and verify actual remote objects.
+- [x] Server Storage key saved in ignored staging env; actual remote objects and both desktop/mobile CMS workflows verified with cleanup.
 - [ ] Provision explicit initial administrator, deployed scheduler, backups/restore and release UAT.
 - [ ] Approved owner-management transfer of Prisma history; runtime ownership retained after automatic review rejected temporary role membership.
 

@@ -14,6 +14,20 @@ test.afterAll(async () => {
   if (process.env.CONTENT_SOURCE === 'database') {
     await db.product.deleteMany({ where: { slug: `qa-product-${run}` } });
     for (const id of [mediaId, secondMediaId].filter((value): value is string => !!value)) {
+      if (process.env.MEDIA_STORAGE_PROVIDER === 'supabase') {
+        const response = await fetch(
+          `${process.env.SUPABASE_URL}/storage/v1/object/${process.env.SUPABASE_MEDIA_BUCKET ?? 'fullers-media'}`,
+          {
+            method: 'DELETE',
+            headers: {
+              apikey: process.env.SUPABASE_SECRET_KEY ?? '',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prefixes: [`${id}.webp`, `${id}.original`] }),
+          },
+        );
+        expect(response.ok, 'Remove only this test run’s remote media objects').toBeTruthy();
+      }
       await db.auditLog.deleteMany({ where: { entity: 'Media', entityId: id } });
       await db.media.deleteMany({ where: { id } });
       await rm(resolve(process.cwd(), '.local-media', 'article', `${id}.webp`), { force: true });

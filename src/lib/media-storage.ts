@@ -80,8 +80,12 @@ export async function mediaOriginalExists(id: string): Promise<boolean> {
       throw error;
     }
   }
-  const response = await remoteRequest(`info/{bucket}/${filename}`, { method: 'HEAD' });
+  const response = await remoteRequest(`info/{bucket}/${filename}`);
   if (response.status === 404) return false;
+  if (response.status === 400) {
+    const error = await response.json().catch(() => null);
+    if (error?.code === 'NoSuchKey' && String(error?.statusCode) === '404') return false;
+  }
   if (!response.ok) throw new Error('Media storage lookup failed.');
   return true;
 }

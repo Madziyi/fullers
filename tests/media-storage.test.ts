@@ -50,6 +50,20 @@ describe('private Supabase media storage', () => {
     expect(await mediaOriginalExists(id)).toBe(false);
     await expect(mediaOriginalExists(id)).rejects.toThrow('lookup failed');
   });
+  it('recognizes Supabase NoSuchKey without swallowing other HTTP 400 failures', async () => {
+    configure();
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ statusCode: '404', code: 'NoSuchKey' }), { status: 400 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ statusCode: '403', code: 'AccessDenied' }), { status: 400 }),
+      );
+    vi.stubGlobal('fetch', fetcher);
+    expect(await mediaOriginalExists(id)).toBe(false);
+    await expect(mediaOriginalExists(id)).rejects.toThrow('lookup failed');
+  });
   it('cleans up only the two objects for the validated media ID', async () => {
     configure();
     const fetcher = vi.fn().mockResolvedValue(new Response('{}'));
