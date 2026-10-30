@@ -19,3 +19,5 @@ M4 release inputs remain: hosting/storage and dependable scheduler configuration
 Review packaging: the user explicitly approved public source export on October 26, 2026. The branch is pushed and [PR #5](https://github.com/Madziyi/fullers/pull/5) is open, stacked on M3B. Hosted CI is pending; no merge or deployment was performed.
 
 Manual hosting handoff requested: docs/STAGING_RELEASE.md. Staging indexing controls implemented/verified. User requested instructions for both Hostinger and Vercel; no deployment performed. Original 5 MiB uploads retained, so Vercel still needs a payload-limit adaptation.
+
+October 30: user explicitly approved exporting codex/supabase-staging to the public Madziyi/fullers repository. Branch pushed successfully; Hostinger must import this branch rather than documentation-only main. No merge or deployment.

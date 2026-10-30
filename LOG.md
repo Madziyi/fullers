@@ -107,3 +107,7 @@ User saved the modern server key directly in ignored staging environment. Verifi
 ## October 27 - Initial admin and manual hosting handoff
 
 Provisioned initial administrator from credentials the user explicitly saved in ignored staging env; verified production sign-in and administrator navigation. Added SITE_INDEXING_ENABLED=false staging noindex header, robots disallow-all and empty sitemap. Verified those controls and protected worker guest denial/authenticated empty invocation. Lint/types, 82 unit tests and production build passed during preparation. A 4 MiB upload boundary and desktop/mobile checks passed, then that temporary change was withdrawn after Hostinger selection; original 5 MiB behavior is retained, with Vercel payload adaptation documented as outstanding. User then requested steps for both providers and will handle account/deployment work. No hosting deployment, live DNS change, scheduler activation or paid change. QA servers stopped and generated screenshot/config outputs restored; original preview and .env preserved.
+
+## October 30 - Hostinger import branch published
+
+Diagnosed missing package.json: remote main contains only original documents/assets, while the application is on codex/supabase-staging. Automatic approval review initially rejected public export. User explicitly approved the exact branch/destination; push succeeded and remote SHA matched the prepared commit. Hostinger can now select the application branch. No merge, deployment or old-site change.

@@ -38,3 +38,5 @@ QA uses isolated output and ports. Preserve the user's preview and keep generate
 - [ ] Approved owner-management transfer of Prisma history; runtime ownership retained after automatic review rejected temporary role membership.
 
 See docs/SUPABASE_STAGING.md for exact checks and hosting prerequisites.
+
+- [x] October 30: explicitly approved staging branch push to GitHub; available for Hostinger import.
